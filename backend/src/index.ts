@@ -1,58 +1,56 @@
+import express from 'express';
+import cors from 'cors';
+
+import gql from "graphql-tag";
 import { ApolloServer } from '@apollo/server';
-import { startStandaloneServer } from '@apollo/server/standalone';
+import { buildSubgraphSchema } from '@apollo/subgraph';
+import { expressMiddleware } from '@apollo/server/express4';
+import resolvers from './graphql/resolvers/index.js';
+import { readFileSync, readdirSync } from "fs";
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { hello } from './routes/hello.js';
 
-// A schema is a collection of type definitions (hence "typeDefs")
-// that together define the "shape" of queries that are executed against
-// your data.
-const typeDefs = `#graphql
-  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-  # This "Book" type defines the queryable fields for every book in our data source.
-  type Book {
-    title: String
-    author: String
-  }
+const PORT = process.env.PORT || 5050;
+const app = express();
 
-  # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "books" query returns an array of zero or more Books (defined above).
-  type Query {
-    books: [Book]
-  }
-`;
+app.use(cors());
+app.use(express.json());
 
-const books = [
-    {
-        title: 'The Awakening',
-        author: 'Kate Chopin',
-    },
-    {
-        title: 'City of Glass',
-        author: 'Paul Auster',
-    },
-];
+const rawTypeDefs = readdirSync(path.join(__dirname, "./graphql/schemas")).sort((a, b) => {
+    if (a.includes("schema.graphql")) return -1;
+    if (b.includes("schema.graphql")) return 1;
+    return a.localeCompare(b)
+}).map((file) =>
+    readFileSync(path.join(__dirname, "./graphql/schemas", file), {
+        encoding: "utf-8",
+    })
+).join("\n\n");
+const typeDefs = gql(rawTypeDefs);
 
-// Resolvers define how to fetch the types defined in your schema.
-// This resolver retrieves books from the "books" array above.
-const resolvers = {
-    Query: {
-        books: () => books,
-    },
-};
-
-// The ApolloServer constructor requires two parameters: your schema
-// definition and your set of resolvers.
 const server = new ApolloServer({
-    typeDefs,
-    resolvers,
+    schema: buildSubgraphSchema({ typeDefs, resolvers }),
 });
 
-// Passing an ApolloServer instance to the `startStandaloneServer` function:
-//  1. creates an Express app
-//  2. installs your ApolloServer instance as middleware
-//  3. prepares your app to handle incoming requests
-const { url } = await startStandaloneServer(server, {
-    listen: { port: 4000 },
-});
+// Note you must call `start()` on the `ApolloServer`
+// instance before passing the instance to `expressMiddleware`
+await server.start();
 
-console.log(`🚀  Server ready at: ${url}`);
+app.use(
+    '/graphql',
+    cors(),
+    express.json(),
+    expressMiddleware(server),
+);
+
+// Regular REST routes
+app.get("/", hello);
+
+// start the Express server
+app.listen(PORT, () => {
+    console.log(`Server is running on port: ${PORT}`);
+    console.log(`GraphQL server available at: http://localhost:${PORT}/graphql`);
+});

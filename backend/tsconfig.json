@@ -1,4 +1,8 @@
 {
+    "include": [
+        "src/**/*",
+        "src/graphql/schemas/*.graphql"
+    ],
     "compilerOptions": {
         "rootDirs": [
             "src"

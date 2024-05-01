@@ -2,20 +2,23 @@
   "name": "backend",
   "version": "0.0.1",
   "description": "backend for FraserVotes 2024",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "compile": "tsc",
+    "compile": "tsc && copyfiles -u 1 src/graphql/schemas/*.graphql dist/",
     "start": "npm run compile && node ./dist/index.js"
   },
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@apollo/server": "^4.10.4",
-    "graphql": "^16.8.1"
+    "@apollo/subgraph": "^2.7.4",
+    "graphql": "^16.8.1",
+    "graphql-tag": "^2.12.6"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
+    "copyfiles": "^2.4.1",
     "nodemon": "^3.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
