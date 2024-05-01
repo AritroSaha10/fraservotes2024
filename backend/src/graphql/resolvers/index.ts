@@ -14,6 +14,7 @@ const books = [
 const resolvers = {
     Query: {
         books: () => books,
+        positions: (_, __, contextValue) => contextValue.dataSources.positions.getPositions()
     },
 };
 
