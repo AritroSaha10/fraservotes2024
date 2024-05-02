@@ -1,7 +1,7 @@
 import { Document, Schema, model } from 'mongoose';
 
 // Position interface
-interface PositionDocument extends Document {
+export interface PositionDocument extends Document {
     name: string;
     spotsAvailable: number;
 }

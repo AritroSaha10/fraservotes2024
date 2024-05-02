@@ -1,18 +1,23 @@
 import { MongoDataSource } from 'apollo-datasource-mongodb'
 import { ObjectId } from 'mongodb'
 import { GraphQLError } from 'graphql';
+import { PositionDocument } from './positions';
 
-export interface PositionDocument {
+interface Candidate {
     _id: ObjectId
-    name: string
-    spotsAvailable: number
+    fullName: string
+    position: PositionDocument
+    biography: string
+    grade: number
+    picture: string
+    campaignVideo: string
 }
 
-export default class Positions extends MongoDataSource<PositionDocument> {
-    async getPosition(id: ObjectId | string) {
+export default class Candidates extends MongoDataSource<Candidate> {
+    async getCandidate(id: ObjectId | string) {
         const data = await this.findOneById(id);
         if (data === null || data === undefined) {
-            throw new GraphQLError('No position exists with the given ID.', {
+            throw new GraphQLError('No candidate exists with the given ID.', {
                 extensions: {
                     code: 'NOT_FOUND',
                 },
@@ -22,7 +27,7 @@ export default class Positions extends MongoDataSource<PositionDocument> {
         return data;
     }
 
-    getPositions() {
+    getCandidates() {
         // @ts-ignore
         return this.model!.find().exec()
     }
