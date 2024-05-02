@@ -15,6 +15,7 @@ export default class Positions extends MongoDataSource<PositionDocument> {
             throw new GraphQLError('No position exists with the given ID.', {
                 extensions: {
                     code: 'NOT_FOUND',
+                    http: { status: 404 }
                 },
             });
         }

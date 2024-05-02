@@ -20,6 +20,7 @@ export default class Candidates extends MongoDataSource<Candidate> {
             throw new GraphQLError('No candidate exists with the given ID.', {
                 extensions: {
                     code: 'NOT_FOUND',
+                    http: { status: 404 }
                 },
             });
         }
