@@ -1,0 +1,14 @@
+extend type Query {
+  candidates: [Candidate!]!
+  candidate(id: ID!): Candidate
+}
+
+type Candidate {
+  _id: ID!
+  fullName: String!
+  position: Position!
+  biography: String! # In markdown
+  grade: Int!
+  picture: String!
+  campaignVideo: String! # YouTube video ID
+}

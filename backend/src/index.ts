@@ -13,8 +13,11 @@ import { hello } from './routes/hello.js';
 import Positions from './graphql/datasources/positions.js';
 import mongoose from 'mongoose';
 import Position from './models/position.js';
+import { MongoClient } from 'mongodb'
 
 import 'dotenv/config'
+import Candidates from './graphql/datasources/candidates.js';
+import Candidate from './models/candidate.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,6 +26,9 @@ const PORT = process.env.PORT || 5050;
 const app = express();
 mongoose.connect(process.env.MONGODB_CONNECTION_STR);
 
+
+const client = new MongoClient(process.env.MONGODB_CONNECTION_STR);
+client.connect()
 
 // Middleware
 app.use(cors());
@@ -43,6 +49,7 @@ const typeDefs = gql(rawTypeDefs);
 // Setup Apollo GraphQL server
 const server = new ApolloServer({
     schema: buildSubgraphSchema({ typeDefs, resolvers }),
+    status400ForVariableCoercionErrors: true
 });
 await server.start();
 app.use(
@@ -55,6 +62,8 @@ app.use(
                 dataSources: {
                     // @ts-ignore
                     positions: new Positions({ modelOrCollection: Position }),
+                    // @ts-ignore
+                    candidates: new Candidates({ modelOrCollection: Candidate }),
                 }
             };
         }
