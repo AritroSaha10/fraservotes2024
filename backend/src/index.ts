@@ -13,11 +13,26 @@ import { hello } from './routes/hello.js';
 import Positions from './graphql/datasources/positions.js';
 import mongoose from 'mongoose';
 import Position from './models/position.js';
-import { MongoClient } from 'mongodb'
 
 import 'dotenv/config'
 import Candidates from './graphql/datasources/candidates.js';
 import Candidate from './models/candidate.js';
+
+import { initializeApp } from 'firebase-admin/app';
+import { getAuth, DecodedIdToken } from 'firebase-admin/auth';
+import { GraphQLError } from 'graphql';
+import Users from './graphql/datasources/users.js';
+import createServiceAccount from './util/createServiceAccount.js';
+
+export interface MyContext {
+    authTokenDecoded: DecodedIdToken,
+    authTokenRaw: string,
+    dataSources: {
+        positions: Positions,
+        candidates: Candidates,
+        users: Users
+    }
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,9 +41,10 @@ const PORT = process.env.PORT || 5050;
 const app = express();
 mongoose.connect(process.env.MONGODB_CONNECTION_STR);
 
-
-const client = new MongoClient(process.env.MONGODB_CONNECTION_STR);
-client.connect()
+initializeApp({
+    credential: createServiceAccount()
+})
+const auth = getAuth();
 
 // Middleware
 app.use(cors());
@@ -47,7 +63,7 @@ const rawTypeDefs = readdirSync(path.join(__dirname, "./graphql/schemas")).sort(
 const typeDefs = gql(rawTypeDefs);
 
 // Setup Apollo GraphQL server
-const server = new ApolloServer({
+const server = new ApolloServer<MyContext>({
     schema: buildSubgraphSchema({ typeDefs, resolvers }),
     status400ForVariableCoercionErrors: true
 });
@@ -58,12 +74,46 @@ app.use(
     express.json(),
     expressMiddleware(server, {
         context: async ({ req, res }) => {
+            const authToken = (req.headers.authorization || "").replace("Bearer ", "");
+
+            let decodedToken: DecodedIdToken = null;
+            try {
+                decodedToken = await auth.verifyIdToken(authToken);
+            } catch (e) {
+                if ("code" in e) {
+                    if (!["auth/id-token-expired", "auth/id-token-invalid", "auth/id-token-revoked", "auth/argument-error"].includes(e.code)) {
+                        console.log(e)
+                        console.error("Error while authenticating user: " + e)
+                    }
+
+                    throw new GraphQLError('Could not authenticate user', {
+                        extensions: {
+                            code: 'UNAUTHENTICATED',
+                            http: { status: 401 },
+                        },
+                    });
+                } else {
+                    console.log(e)
+                    console.error("Error while authenticating user: " + e)
+
+                    throw new GraphQLError('Could not authenticate user', {
+                        extensions: {
+                            code: 'SERVER_ERROR',
+                            http: { status: 500 },
+                        },
+                    });
+                }
+            }
+
             return {
+                authTokenDecoded: decodedToken,
+                authTokenRaw: authToken,
                 dataSources: {
                     // @ts-ignore
                     positions: new Positions({ modelOrCollection: Position }),
                     // @ts-ignore
                     candidates: new Candidates({ modelOrCollection: Candidate }),
+                    users: new Users()
                 }
             };
         }

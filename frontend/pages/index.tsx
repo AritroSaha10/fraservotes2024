@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Inter } from "next/font/google";
-import { GoogleAuthProvider, getAuth, signInWithRedirect, signOut } from "firebase/auth";
+import { GoogleAuthProvider, getAuth, signInWithPopup, signInWithRedirect, signOut } from "firebase/auth";
 import auth from "@/lib/firebase/auth";
 import { useFirebaseAuth } from "@/components/FirebaseAuthContext";
 import { useEffect, useState } from "react";
@@ -34,7 +34,7 @@ export default function Home() {
           </button>
         </div>
       ) : (
-        <button onClick={() => signInWithRedirect(auth, provider)}>
+        <button onClick={() => signInWithPopup(auth, provider)}>
           Sign In
         </button>
       )}
