@@ -18,10 +18,11 @@ import 'dotenv/config'
 import Candidates from './graphql/datasources/candidates.js';
 import Candidate from './models/candidate.js';
 
-import { initializeApp, cert } from 'firebase-admin/app';
+import { initializeApp } from 'firebase-admin/app';
 import { getAuth, DecodedIdToken } from 'firebase-admin/auth';
 import { GraphQLError } from 'graphql';
 import Users from './graphql/datasources/users.js';
+import createServiceAccount from './util/createServiceAccount.js';
 
 export interface MyContext {
     authTokenDecoded: DecodedIdToken,
@@ -40,14 +41,8 @@ const PORT = process.env.PORT || 5050;
 const app = express();
 mongoose.connect(process.env.MONGODB_CONNECTION_STR);
 
-const serviceAccount = cert({
-    projectId: process.env.GCP_PROJECT_ID,
-    privateKey: process.env.GCP_PRIVATE_KEY,
-    clientEmail: process.env.GCP_CLIENT_EMAIL,
-});
-
 initializeApp({
-    credential: serviceAccount
+    credential: createServiceAccount()
 })
 const auth = getAuth();
 
@@ -86,7 +81,7 @@ app.use(
                 decodedToken = await auth.verifyIdToken(authToken);
             } catch (e) {
                 if ("code" in e) {
-                    if (!["auth/expired-id-token", "auth/invalid-id-token", "auth/revoked-id-token", "auth/argument-error"].includes(e.code)) {
+                    if (!["auth/id-token-expired", "auth/id-token-invalid", "auth/id-token-revoked", "auth/argument-error"].includes(e.code)) {
                         console.log(e)
                         console.error("Error while authenticating user: " + e)
                     }
