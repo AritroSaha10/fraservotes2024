@@ -21,12 +21,15 @@ import Candidate from './models/candidate.js';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth, DecodedIdToken } from 'firebase-admin/auth';
 import { GraphQLError } from 'graphql';
+import Users from './graphql/datasources/users.js';
 
 export interface MyContext {
-    authToken: DecodedIdToken
+    authTokenDecoded: DecodedIdToken,
+    authTokenRaw: string,
     dataSources: {
         positions: Positions,
-        candidates: Candidates
+        candidates: Candidates,
+        users: Users
     }
 }
 
@@ -83,7 +86,7 @@ app.use(
                 decodedToken = await auth.verifyIdToken(authToken);
             } catch (e) {
                 if ("code" in e) {
-                    if (!["auth/expired_id_token", "auth/invalid_id_token", "auth/revoked_id_token", "auth/argument-error"].includes(e.code)) {
+                    if (!["auth/expired-id-token", "auth/invalid-id-token", "auth/revoked-id-token", "auth/argument-error"].includes(e.code)) {
                         console.log(e)
                         console.error("Error while authenticating user: " + e)
                     }
@@ -108,12 +111,14 @@ app.use(
             }
 
             return {
-                authToken: decodedToken,
+                authTokenDecoded: decodedToken,
+                authTokenRaw: authToken,
                 dataSources: {
                     // @ts-ignore
                     positions: new Positions({ modelOrCollection: Position }),
                     // @ts-ignore
                     candidates: new Candidates({ modelOrCollection: Candidate }),
+                    users: new Users()
                 }
             };
         }

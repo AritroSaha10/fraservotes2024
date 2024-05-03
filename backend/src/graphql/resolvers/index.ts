@@ -1,5 +1,6 @@
 import { getCandidateResolver, getCandidatesResolver } from "./candidate.js";
 import { getPositionResolver, getPositionsResolver } from "./positions.js";
+import { getUserResolver, getUsersResolver } from "./user.js";
 
 // Resolvers define how to fetch the types defined in your schema.
 // This resolver retrieves books from the "books" array above.
@@ -9,6 +10,8 @@ const resolvers = {
         position: getPositionResolver,
         candidates: getCandidatesResolver,
         candidate: getCandidateResolver,
+        users: getUsersResolver,
+        user: getUserResolver
     },
     Candidate: {
         position(parent, args, contextValue) {
