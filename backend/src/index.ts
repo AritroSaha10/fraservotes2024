@@ -63,7 +63,6 @@ const rawTypeDefs = readdirSync(path.join(__dirname, "./graphql/schemas")).sort(
         encoding: "utf-8",
     })
 ).join("\n\n");
-console.log(rawTypeDefs)
 const typeDefs = gql(rawTypeDefs);
 
 // Setup Apollo GraphQL server
