@@ -49,4 +49,12 @@ export default class Users {
 
         return (await listAllUsers()).map(convertUserRecordToUser);
     }
+
+    async updateClaimsForUser(uid: string, newClaims: object) {
+        const user = await this.fbAuth.getUser(uid);
+        // Overlap new claims on top of old
+        const updatedClaims = { ...user.customClaims, ...newClaims };
+        
+        await this.fbAuth.setCustomUserClaims(uid, updatedClaims);
+    }
 }

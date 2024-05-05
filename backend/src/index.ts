@@ -22,7 +22,9 @@ import { initializeApp } from 'firebase-admin/app';
 import { getAuth, DecodedIdToken } from 'firebase-admin/auth';
 import { GraphQLError } from 'graphql';
 import Users from './graphql/datasources/users.js';
+import EncryptedBallots from './graphql/datasources/encryptedBallots.js'
 import createServiceAccount from './util/createServiceAccount.js';
+import EncryptedBallot from './models/encryptedBallot.js';
 
 export interface MyContext {
     authTokenDecoded: DecodedIdToken,
@@ -30,7 +32,8 @@ export interface MyContext {
     dataSources: {
         positions: Positions,
         candidates: Candidates,
-        users: Users
+        users: Users,
+        encryptedBallots: EncryptedBallots
     }
 }
 
@@ -60,6 +63,7 @@ const rawTypeDefs = readdirSync(path.join(__dirname, "./graphql/schemas")).sort(
         encoding: "utf-8",
     })
 ).join("\n\n");
+console.log(rawTypeDefs)
 const typeDefs = gql(rawTypeDefs);
 
 // Setup Apollo GraphQL server
@@ -113,7 +117,8 @@ app.use(
                     positions: new Positions({ modelOrCollection: Position }),
                     // @ts-ignore
                     candidates: new Candidates({ modelOrCollection: Candidate }),
-                    users: new Users()
+                    users: new Users(),
+                    encryptedBallots: new EncryptedBallots({ modelOrCollection: EncryptedBallot })
                 }
             };
         }

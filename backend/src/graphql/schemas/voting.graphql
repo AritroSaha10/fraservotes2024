@@ -1,0 +1,13 @@
+extend type Query {
+  encryptedBallots: [Ballot!]!
+  ballotCount: Int!
+}
+
+extend type Mutation {
+  submitBallot(encryptedBallot: String): Void
+  deleteBallots: Void
+}
+
+type Ballot {
+  encryptedBallot: String!
+}
