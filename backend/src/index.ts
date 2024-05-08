@@ -25,6 +25,10 @@ import Users from './graphql/datasources/users.js';
 import EncryptedBallots from './graphql/datasources/encryptedBallots.js'
 import createServiceAccount from './util/createServiceAccount.js';
 import EncryptedBallot from './models/encryptedBallot.js';
+import DecryptedBallots from './graphql/datasources/decryptedBallots.js';
+import DecryptedBallot from './models/decryptedBallot.js';
+import checkIfAdmin from './util/checkIfAdmin.js';
+import checkIfVolunteer from './util/checkIfVolunteer.js';
 
 export interface MyContext {
     authTokenDecoded: DecodedIdToken,
@@ -33,7 +37,8 @@ export interface MyContext {
         positions: Positions,
         candidates: Candidates,
         users: Users,
-        encryptedBallots: EncryptedBallots
+        encryptedBallots: EncryptedBallots,
+        decryptedBallots: DecryptedBallots
     }
 }
 
@@ -82,6 +87,14 @@ app.use(
             let decodedToken: DecodedIdToken = null;
             try {
                 decodedToken = await auth.verifyIdToken(authToken);
+                if (!(checkIfAdmin(decodedToken) || checkIfVolunteer(decodedToken))) {
+                    throw new GraphQLError('Not a volunteer or admin', {
+                        extensions: {
+                            code: 'FORBIDDEN',
+                            http: { status: 403 },
+                        },
+                    });
+                }
             } catch (e) {
                 if ("code" in e) {
                     if (!["auth/id-token-expired", "auth/id-token-invalid", "auth/id-token-revoked", "auth/argument-error"].includes(e.code)) {
@@ -117,7 +130,8 @@ app.use(
                     // @ts-ignore
                     candidates: new Candidates({ modelOrCollection: Candidate }),
                     users: new Users(),
-                    encryptedBallots: new EncryptedBallots({ modelOrCollection: EncryptedBallot })
+                    encryptedBallots: new EncryptedBallots({ modelOrCollection: EncryptedBallot }),
+                    decryptedBallots: new DecryptedBallots({ modelOrCollection: DecryptedBallot })
                 }
             };
         }

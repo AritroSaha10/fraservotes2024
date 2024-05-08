@@ -37,9 +37,9 @@ export default async function validateTokenForSensitiveRoutes(auth: Auth, authTo
         }
     }
 
-    // Ensure token is very fresh (max. 2 minutes old)
+    // Ensure token is very fresh (max. 5 minutes old)
     const currTimestampUTC = Math.floor((new Date()).getTime() / 1000)
-    if (currTimestampUTC - decodedToken.iat > 2 * 60) {
+    if (currTimestampUTC - decodedToken.iat > 5 * 60) {
         console.debug("Timestamps for old token", currTimestampUTC, decodedToken.iat, currTimestampUTC - decodedToken.iat);
         throw new GraphQLError('Token is too old', {
             extensions: {

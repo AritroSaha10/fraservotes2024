@@ -5,8 +5,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "compile": "tsc && copyfiles -u 1 src/graphql/schemas/*.graphql dist/",
-    "start": "npm run compile && node ./dist/index.js"
+    "build": "tsc && copyfiles -u 1 src/graphql/schemas/*.graphql dist/",
+    "start": "npm run build && node ./dist/index.js"
   },
   "author": "",
   "license": "ISC",

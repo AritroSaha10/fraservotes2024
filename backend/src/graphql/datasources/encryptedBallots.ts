@@ -9,15 +9,15 @@ export default class EncryptedBallots extends MongoDataSource<EncryptedBallotDoc
         });
     }
 
-    getBallotCount() {
+    getCount() {
         return this.model.countDocuments();
     }
 
-    getEncryptedBallots() {
+    getAll() {
         return this.model.find().exec();
     }
 
-    deleteBallots() {
+    deleteAll() {
         return this.model.deleteMany({});
     }
 }

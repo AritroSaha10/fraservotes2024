@@ -13,6 +13,12 @@ export default function Home() {
   const [token, setToken] = useState("");
 
   useEffect(() => {
+    provider.setCustomParameters({
+      hd: "pdsb.net"
+    });
+  }, []);
+
+  useEffect(() => {
     (async () => {
       if (user !== null && loaded) {
         setToken(await user.getIdToken());

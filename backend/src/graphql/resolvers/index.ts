@@ -1,7 +1,8 @@
+import { MyContext } from "../../index.js";
 import { getCandidateResolver, getCandidatesResolver } from "./candidate.js";
 import { getPositionResolver, getPositionsResolver } from "./positions.js";
 import { getUserResolver, getUsersResolver } from "./user.js";
-import { deleteBallots, getBallotCount, getEncryptedBallots, submitBallot } from "./voting.js";
+import { addDecryptedBallot, deleteBallots, getDecryptedBallotCount, getDecryptedBallots, getEncryptedBallotCount, getEncryptedBallots, submitBallot } from "./voting.js";
 
 // Resolvers define how to fetch the types defined in your schema.
 // This resolver retrieves books from the "books" array above.
@@ -14,15 +15,26 @@ const resolvers = {
         users: getUsersResolver,
         user: getUserResolver,
         encryptedBallots: getEncryptedBallots,
-        ballotCount: getBallotCount,
+        decryptedBallots: getDecryptedBallots,
+        encryptedBallotCount: getEncryptedBallotCount,
+        decryptedBallotCount: getDecryptedBallotCount,
     },
     Mutation: {
         submitBallot,
+        addDecryptedBallot,
         deleteBallots,
     },
     Candidate: {
-        position(parent, args, contextValue) {
+        position(parent, _, contextValue: MyContext) {
             return contextValue.dataSources.positions.getPosition(parent.position.toString())
+        }
+    },
+    SelectedBallotOption: {
+        position(parent, _, contextValue: MyContext) {
+            return contextValue.dataSources.positions.getPosition(parent.position.toString())
+        },
+        candidate(parent, _, contextValue: MyContext) {
+            return contextValue.dataSources.candidates.getCandidate(parent.candidate.toString())
         }
     }
 };
