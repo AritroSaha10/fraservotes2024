@@ -34,7 +34,7 @@ const main = async () => {
   const [operation, adminEmail] = process.argv.slice(2); // Capture command-line arguments
 
   if (!operation || !adminEmail) {
-    console.log('Usage: ts-node manageAdmins.ts <add|remove> <admin-email>');
+    console.log('Usage: tsx manageAdmins.ts <add|remove> <admin-email>');
     process.exit(1);
   }
 
