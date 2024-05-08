@@ -22,4 +22,8 @@ export default class VotingStatuses extends MongoDataSource<VotingStatusDocument
   getVotingStatusByStudentNumber(studentNumber: number) {
     return this.model.findOne({ studentNumber: studentNumber }).exec();
   }
+
+  clearVotingStatuses() {
+    return this.model.updateMany({}, { voted: false });
+  }
 }

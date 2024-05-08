@@ -39,4 +39,26 @@ const getVotingStatusResolver = async (_, args: { filter: VotingStatusFilter }, 
     }
 };
 
-export { getVotingStatusesResolver, getVotingStatusResolver };
+const clearVotingStatusesResolver = async (_, __, contextValue: MyContext) => {
+    // Sensitive action, need to verify whether they are authorized
+    const auth = getAuth();
+    await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
+    validateIfAdmin(contextValue.authTokenDecoded);
+
+    // Double-check if user is actually admin, since this is quite destructive
+    const uid = contextValue.authTokenDecoded.uid;
+    const { customClaims } = await auth.getUser(uid);
+    if (!("admin" in customClaims && customClaims.admin === true)) {
+        throw new GraphQLError("Not sufficient permissions", {
+            extensions: {
+                code: "FORBIDDEN",
+                http: { status: 403 },
+            },
+        });
+    }
+
+    await contextValue.dataSources.votingStatuses.clearVotingStatuses();
+    return null;
+}
+
+export { getVotingStatusesResolver, getVotingStatusResolver, clearVotingStatusesResolver };

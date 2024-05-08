@@ -3,6 +3,10 @@ extend type Query {
   votingStatus(filter: VotingStatusFilter!): VotingStatus
 }
 
+extend type Mutation {
+  resetVotingStatuses: Void
+}
+
 type VotingStatus {
   _id: ID!
   studentNumber: Int!
