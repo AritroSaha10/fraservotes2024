@@ -1,0 +1,15 @@
+extend type Query {
+  votingStatuses: [VotingStatus!]!
+  votingStatus(filter: VotingStatusFilter!): VotingStatus
+}
+
+type VotingStatus {
+  _id: ID!
+  studentNumber: Int!
+  voted: Boolean!
+}
+
+input VotingStatusFilter {
+  _id: ID
+  studentNumber: Int
+}

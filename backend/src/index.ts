@@ -29,6 +29,8 @@ import DecryptedBallots from './graphql/datasources/decryptedBallots.js';
 import DecryptedBallot from './models/decryptedBallot.js';
 import checkIfAdmin from './util/checkIfAdmin.js';
 import checkIfVolunteer from './util/checkIfVolunteer.js';
+import VotingStatuses from './graphql/datasources/votingStatuses.js';
+import VotingStatus from './models/votingStatus.js';
 
 export interface MyContext {
     authTokenDecoded: DecodedIdToken,
@@ -38,7 +40,8 @@ export interface MyContext {
         candidates: Candidates,
         users: Users,
         encryptedBallots: EncryptedBallots,
-        decryptedBallots: DecryptedBallots
+        decryptedBallots: DecryptedBallots,
+        votingStatuses: VotingStatuses
     }
 }
 
@@ -131,7 +134,8 @@ app.use(
                     candidates: new Candidates({ modelOrCollection: Candidate }),
                     users: new Users(),
                     encryptedBallots: new EncryptedBallots({ modelOrCollection: EncryptedBallot }),
-                    decryptedBallots: new DecryptedBallots({ modelOrCollection: DecryptedBallot })
+                    decryptedBallots: new DecryptedBallots({ modelOrCollection: DecryptedBallot }),
+                    votingStatuses: new VotingStatuses({ modelOrCollection: VotingStatus }),
                 }
             };
         }

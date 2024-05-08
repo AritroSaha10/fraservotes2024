@@ -2,7 +2,7 @@ import { MongoDataSource } from 'apollo-datasource-mongodb'
 import { DecryptedBallotDocument, SelectedOption } from '../../models/decryptedBallot';
 
 export default class DecryptedBallots extends MongoDataSource<DecryptedBallotDocument> {
-    addDecryptedBallot(timestampUTC: Number, selectedChoices: SelectedOption[]) {
+    addDecryptedBallot(timestampUTC: number, selectedChoices: SelectedOption[]) {
         return this.model.create({ 
             timestampUTC,
             selectedOptions: selectedChoices

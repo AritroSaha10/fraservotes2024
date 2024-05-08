@@ -3,6 +3,7 @@ import { getCandidateResolver, getCandidatesResolver } from "./candidate.js";
 import { getPositionResolver, getPositionsResolver } from "./positions.js";
 import { getUserResolver, getUsersResolver } from "./user.js";
 import { addDecryptedBallot, deleteBallots, getDecryptedBallotCount, getDecryptedBallots, getEncryptedBallotCount, getEncryptedBallots, submitBallot } from "./voting.js";
+import { getVotingStatusResolver, getVotingStatusesResolver } from "./votingStatus.js";
 
 // Resolvers define how to fetch the types defined in your schema.
 // This resolver retrieves books from the "books" array above.
@@ -18,6 +19,8 @@ const resolvers = {
         decryptedBallots: getDecryptedBallots,
         encryptedBallotCount: getEncryptedBallotCount,
         decryptedBallotCount: getDecryptedBallotCount,
+        votingStatuses: getVotingStatusesResolver,
+        votingStatus: getVotingStatusResolver,
     },
     Mutation: {
         submitBallot,
