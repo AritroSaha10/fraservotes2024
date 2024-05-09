@@ -1,5 +1,6 @@
 import { MyContext } from "../../index.js";
 import { getCandidateResolver, getCandidatesResolver } from "./candidate.js";
+import { getConfigResolver, updateConfig } from "./config.js";
 import { getPositionResolver, getPositionsResolver } from "./positions.js";
 import { getUserResolver, getUsersResolver } from "./user.js";
 import { addDecryptedBallot, deleteBallots, getDecryptedBallotCount, getDecryptedBallots, getEncryptedBallotCount, getEncryptedBallots, submitBallot } from "./voting.js";
@@ -21,12 +22,14 @@ const resolvers = {
         decryptedBallotCount: getDecryptedBallotCount,
         votingStatuses: getVotingStatusesResolver,
         votingStatus: getVotingStatusResolver,
-        resetVotingStatuses: clearVotingStatusesResolver
+        resetVotingStatuses: clearVotingStatusesResolver,
+        config: getConfigResolver,
     },
     Mutation: {
         submitBallot,
         addDecryptedBallot,
         deleteBallots,
+        updateConfig,
     },
     Candidate: {
         position(parent, _, contextValue: MyContext) {

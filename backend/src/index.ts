@@ -31,6 +31,8 @@ import checkIfAdmin from './util/checkIfAdmin.js';
 import checkIfVolunteer from './util/checkIfVolunteer.js';
 import VotingStatuses from './graphql/datasources/votingStatuses.js';
 import VotingStatus from './models/votingStatus.js';
+import ConfigDataSource from './graphql/datasources/config.js';
+import Config from './models/config.js';
 
 export interface MyContext {
     authTokenDecoded: DecodedIdToken,
@@ -41,7 +43,8 @@ export interface MyContext {
         users: Users,
         encryptedBallots: EncryptedBallots,
         decryptedBallots: DecryptedBallots,
-        votingStatuses: VotingStatuses
+        votingStatuses: VotingStatuses,
+        config: ConfigDataSource,
     }
 }
 
@@ -136,6 +139,7 @@ app.use(
                     encryptedBallots: new EncryptedBallots({ modelOrCollection: EncryptedBallot }),
                     decryptedBallots: new DecryptedBallots({ modelOrCollection: DecryptedBallot }),
                     votingStatuses: new VotingStatuses({ modelOrCollection: VotingStatus }),
+                    config: new ConfigDataSource({ modelOrCollection: Config }),
                 }
             };
         }
