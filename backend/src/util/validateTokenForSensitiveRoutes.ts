@@ -14,7 +14,6 @@ export default async function validateTokenForSensitiveRoutes(auth: Auth, authTo
     } catch (e) {
         if ("code" in e) {
             if (!["auth/expired-id-token", "auth/invalid-id-token", "auth/revoked-id-token", "auth/user-disabled"].includes(e.code)) {
-                console.log(e)
                 console.error("Error while authenticating user: " + e)
             }
 
@@ -25,7 +24,6 @@ export default async function validateTokenForSensitiveRoutes(auth: Auth, authTo
                 },
             });
         } else {
-            console.log(e)
             console.error("Error while authenticating user: " + e)
 
             throw new GraphQLError('Could not authenticate user', {
