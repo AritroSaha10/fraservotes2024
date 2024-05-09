@@ -4,7 +4,7 @@ import { getAuth } from "firebase-admin/auth";
 import validateTokenForSensitiveRoutes from "../../util/validateTokenForSensitiveRoutes.js";
 import { validateIfAdmin } from "../../util/checkIfAdmin.js";
 import { SelectedOption } from "../../models/decryptedBallot";
-import { isPGPEncrypted } from "../../util/isPGPEncrypted";
+import { isPGPEncrypted } from "../../util/isPGPEncrypted.js";
 
 const getEncryptedBallots = async (_, __, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
