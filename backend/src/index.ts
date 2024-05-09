@@ -79,7 +79,8 @@ const typeDefs = gql(rawTypeDefs);
 // Setup Apollo GraphQL server
 const server = new ApolloServer<MyContext>({
     schema: buildSubgraphSchema({ typeDefs, resolvers }),
-    status400ForVariableCoercionErrors: true
+    status400ForVariableCoercionErrors: true,
+    introspection: process.env.NODE_ENV !== 'production'
 });
 await server.start();
 app.use(
