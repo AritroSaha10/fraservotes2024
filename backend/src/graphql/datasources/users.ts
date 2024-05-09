@@ -6,7 +6,7 @@ export interface User {
     displayName: string
     email: string
     admin: boolean
-    voted: boolean
+    volunteer: boolean
 }
 
 export function convertUserRecordToUser(userRec: UserRecord): User {
@@ -15,7 +15,7 @@ export function convertUserRecordToUser(userRec: UserRecord): User {
         displayName: userRec.displayName,
         email: userRec.email,
         admin: userRec.customClaims instanceof Object && "admin" in userRec.customClaims && userRec.customClaims["admin"] === true,
-        voted: userRec.customClaims instanceof Object && "voted" in userRec.customClaims && userRec.customClaims["voted"] === true
+        volunteer: userRec.customClaims instanceof Object && "volunteer" in userRec.customClaims && userRec.customClaims["volunteer"] === true
     }
 }
 

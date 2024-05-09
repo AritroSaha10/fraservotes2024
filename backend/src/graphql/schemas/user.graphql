@@ -8,5 +8,5 @@ type User {
   displayName: String!
   email: String!
   admin: Boolean!
-  voted: Boolean!
+  volunteer: Boolean!
 }
