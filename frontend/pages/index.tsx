@@ -4,13 +4,25 @@ import { GoogleAuthProvider, getAuth, signInWithPopup, signInWithRedirect, signO
 import auth from "@/lib/firebase/auth";
 import { useFirebaseAuth } from "@/components/FirebaseAuthContext";
 import { useEffect, useState } from "react";
+import { gql, useQuery } from "@apollo/client";
 
 const inter = Inter({ subsets: ["latin"] });
+
+const QUERY = gql`
+  query Query {
+  config {
+    isOpen
+    publicKey
+  }
+}
+`;
 
 export default function Home() {
   const provider = new GoogleAuthProvider();
   const { user, loaded } = useFirebaseAuth();
   const [token, setToken] = useState("");
+
+  const { data, loading, error } = useQuery(QUERY);
 
   useEffect(() => {
     provider.setCustomParameters({
@@ -25,6 +37,8 @@ export default function Home() {
       }
     })();
   })
+
+  console.log(data)
 
   return (
     <main
