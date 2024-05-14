@@ -38,7 +38,7 @@ export default function Home() {
     })();
   })
 
-  console.log(data)
+  console.log(!loading ? data.config.isOpen : null)
 
   return (
     <main
