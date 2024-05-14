@@ -28,10 +28,10 @@ export default function Login() {
     const [signInReady, setSignInReady] = useState(false);
 
     const authProvider = new GoogleAuthProvider();
-    authProvider.setCustomParameters({
-        login_hint: "000000@pdsb.net",
-        hd: "pdsb.net", // Only allows users part of pdsb.net organization
-    });
+    // authProvider.setCustomParameters({
+    //     login_hint: "000000@pdsb.net",
+    //     hd: "pdsb.net", // Only allows users part of pdsb.net organization
+    // });
 
     const redirectBasedOnRoles = async (claims: ParsedToken) => {
         // Don't allow users to access if they don't have valid authorization.
@@ -81,7 +81,7 @@ export default function Login() {
             <div className="flex flex-col items-center justify-center p-8 pb-6 bg-white rounded-lg shadow-md max-w-md">
                 <Typography
                     variant="h3"
-                    color="gray"
+                    color="black"
                     className="text-center mb-2"
                 >
                     Log into FraserVotes

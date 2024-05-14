@@ -22,23 +22,10 @@ const FirebaseAuthProvider: React.FC<Props> = ({ children }: Props) => {
         const unsubscribe = onAuthStateChanged(auth, (newUser) => {
             // Only allow people to join with student accounts
             if (newUser !== null && !newUser?.email?.includes("@pdsb.net")) {
-                // I was originally going to make the user account delete itself,
-                // but that wouldn't work since I don't allow users to delete their own account
-                // (DB and auth become out-of-sync, which is a problem). Instead, the add user endpoint should
-                // do this for us (it auto-deletes non-pdsb accounts).
-                // The catch statement is empty because it's supposed to error out (w/ 401)
-                // addUser()
-                //     .catch(console.error)
-                //     .finally(() => {
-                //         signOut(auth)
-                //             .catch(console.error)
-                //             .finally(() => {
-                //                 alert(
-                //                     "Sorry, please sign in with your student account (@pdsb.net). You have automatically been logged out.",
-                //                 );
-                //             });
-                //     });
-
+                // TODO: Commented out for now for debugging w/ other accounts, uncomment near production
+                // newUser.delete().then(() => {
+                //     alert("Please sign in with your student account (@pdsb.net). You have automatically been signed out.");
+                // })
                 return;
             }
 

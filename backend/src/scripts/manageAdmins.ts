@@ -24,7 +24,7 @@ async function changeAdminStatus(adminEmail: string, isAdmin: boolean) {
     // Set the updated claims for the user
     await auth.setCustomUserClaims(user.uid, updatedClaims);
 
-    return `Admin added successfully for ${adminEmail}`;
+    return `Admin status ${isAdmin ? "added" : "removed"} successfully for ${adminEmail}`;
   } catch (error) {
     throw new Error('Failed to add admin: ' + error);
   }

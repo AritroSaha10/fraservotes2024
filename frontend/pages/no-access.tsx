@@ -1,11 +1,8 @@
-import Link from "next/link";
-
 import Layout from "@/components/Layout";
 
-export default function Page403() {
+export function NoAccessComponent() {
     return (
-        <Layout name="403 Forbidden">
-            <div
+        <div
             className="flex flex-col h-screen flex-grow justify-center"
             key="page-404"
         >
@@ -16,9 +13,17 @@ export default function Page403() {
                 <p className="text-xl text-center mb-6 text-gray-700 lg:w-3/4">
                     Sorry, you don&apos;t have access to this website. This is only accessible to volunteers and admins helping with
                     the SAC voting process. If you believe you should have access, please contact Aritro, Thoa, or an SAC teacher supervisor.
+                    You have been automatically signed out.
                 </p>
             </div>
         </div>
+    )
+}
+
+export default function NoAccess() {
+    return (
+        <Layout name="403 Forbidden">
+            <NoAccessComponent />
         </Layout>
     );
 }
