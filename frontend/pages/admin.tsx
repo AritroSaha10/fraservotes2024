@@ -13,7 +13,7 @@ export default function AdminPage() {
 
             <Button color="gray" size="lg" onClick={() => {
                 // Redirect to non-auth page first before signing out to not flicker unauthorized
-                router.push("/login").finally(() => signOut(auth))
+                signOut(auth).then(() => router.push("/login"))
             }}>
                 Sign Out
             </Button>

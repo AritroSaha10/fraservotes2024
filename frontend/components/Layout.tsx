@@ -21,6 +21,7 @@ import { Typography } from "@material-tailwind/react";
 import { UnauthorizedComponent } from "@/pages/401";
 import { ForbiddenComponent } from "@/pages/403";
 import { NoAccessComponent } from "@/pages/no-access";
+import useIsRouterLoading from "./useIsRouterLoading";
 // import AdminRestrictedPage from "@/components/admin/AdminRestrictedPage";
 // import { ComplexNavbar as AdminNavbar } from "@/components/admin/Navbar";
 // import { ComplexNavbar as UserNavbar } from "@/components/user/Navbar";
@@ -61,6 +62,7 @@ export default function Layout({
 }: LayoutProps) {
   const { user, loaded } = useFirebaseAuth();
   const router = useRouter();
+  const isRouterLoading = useIsRouterLoading();
 
   const [authorizationStatus, setAuthorizedStatus] = useState<AUTH_STATUS>(
     (userProtected || adminProtected) ? AUTH_STATUS.LOADING : AUTH_STATUS.OK
@@ -72,7 +74,7 @@ export default function Layout({
     : "An admin page for FraserVotes.";
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded && (!isRouterLoading)) {
       if (userProtected || adminProtected) {
         if (user === null) {
           setAuthorizedStatus(AUTH_STATUS.UNAUTHORIZED);
@@ -104,7 +106,7 @@ export default function Layout({
     }
 
     console.log(user, loaded)
-  }, [user, loaded]);
+  }, [user, loaded, isRouterLoading]);
 
   let navbar: JSX.Element | null = null;
   // if (adminProtected) {

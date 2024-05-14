@@ -25,13 +25,14 @@ import isUndefinedOrNull from "@/util/undefinedOrNull";
 import GoogleButton from "react-google-button";
 
 export default function Login() {
-    const [signInReady, setSignInReady] = useState(false);
+    const [loggingIn, setLoggingIn] = useState(false);
 
     const authProvider = new GoogleAuthProvider();
-    // authProvider.setCustomParameters({
-    //     login_hint: "000000@pdsb.net",
-    //     hd: "pdsb.net", // Only allows users part of pdsb.net organization
-    // });
+    authProvider.setCustomParameters({
+        // login_hint: "000000@pdsb.net",
+        // hd: "pdsb.net", // Only allows users part of pdsb.net organization
+        prompt: 'consent',
+    });
 
     const redirectBasedOnRoles = async (claims: ParsedToken) => {
         // Don't allow users to access if they don't have valid authorization.
@@ -46,24 +47,33 @@ export default function Login() {
 
     const logIn = async () => {
         // Prompt user to log in
-        const res = await signInWithPopup(auth, authProvider);
-        if (res.user === null || res.user === undefined) {
-            alert("Something went wrong when signing you in. Please try again.");
-            return;
-        }
+        setLoggingIn(true);
+        
+        try {
+            const res = await signInWithPopup(auth, authProvider);
+            if (res.user === null || res.user === undefined) {
+                alert("Something went wrong when signing you in. Please try again.");
+                return;
+            }
 
-        const { claims } = await res.user.getIdTokenResult();
-        await redirectBasedOnRoles(claims);
-    };
+            const { claims } = await res.user.getIdTokenResult();
+            await redirectBasedOnRoles(claims);
+        } catch (e) {
+            console.error(e);
+            alert("Something went wrong while signing you in. Please try again.")
+        } finally {
+            setLoggingIn(false);
+        }
+     };
 
     const { user, loaded } = useFirebaseAuth();
 
     useEffect(() => {
-        if (user !== null && loaded && signInReady) {
+        if (user !== null && loaded && !loggingIn) {
             alert("You are already signed in. Redirecting...");
             user.getIdTokenResult().then(({ claims }) => redirectBasedOnRoles(claims));
         }
-    }, [user, loaded, signInReady]);
+    }, [user, loaded]);
 
     return (
         <Layout
