@@ -23,6 +23,8 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useFirebaseAuth } from "@/components/FirebaseAuthContext";
 import isUndefinedOrNull from "@/util/undefinedOrNull";
 import GoogleButton from "react-google-button";
+import { generate } from "random-words";
+import { generateVolunteerKey } from "@/util/volunteerKey";
 
 export default function Login() {
     const [loggingIn, setLoggingIn] = useState(false);
@@ -39,6 +41,8 @@ export default function Login() {
         if (!isUndefinedOrNull(claims.admin) && claims.admin === true) {
             await router.push("/admin");
         } else if (!isUndefinedOrNull(claims.volunteer) && claims.volunteer === true) {
+            // Generate a code and store into local storage
+            await generateVolunteerKey();
             await router.push("/voting");
         } else {
             await Promise.all([signOut(auth), router.push("/no-access")]);
@@ -48,7 +52,7 @@ export default function Login() {
     const logIn = async () => {
         // Prompt user to log in
         setLoggingIn(true);
-        
+
         try {
             const res = await signInWithPopup(auth, authProvider);
             if (res.user === null || res.user === undefined) {

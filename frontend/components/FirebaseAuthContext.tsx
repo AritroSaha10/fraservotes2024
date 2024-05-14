@@ -6,6 +6,7 @@ import { User as firebaseUser, onAuthStateChanged, signOut } from "firebase/auth
 
 // import addUser from "@/lib/backend/user/addUser";
 import auth from "@/lib/firebase/auth";
+import { clearVolunteerKey } from "@/util/volunteerKey";
 
 type User = firebaseUser | null;
 type ContextState = { user: User; loaded: boolean };
@@ -46,6 +47,9 @@ const FirebaseAuthProvider: React.FC<Props> = ({ children }: Props) => {
                                 .catch(() => {});
                         });
                     });
+            } else {
+                // This should always be cleared when signed out so a new one can be generated on sign-in
+                clearVolunteerKey();
             }
         });
         return unsubscribe;

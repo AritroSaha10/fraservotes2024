@@ -45,7 +45,7 @@ enum AUTH_STATUS {
 
 interface LayoutProps extends PropsWithChildren {
   name: string;
-  children: ReactNode;
+  children?: ReactNode;
   noAnim?: boolean;
   className?: string;
   userProtected?: boolean;
@@ -104,8 +104,6 @@ export default function Layout({
     } else {
       setAuthorizedStatus(AUTH_STATUS.LOADING);
     }
-
-    console.log(user, loaded)
   }, [user, loaded, isRouterLoading]);
 
   let navbar: JSX.Element | null = null;
@@ -119,7 +117,7 @@ export default function Layout({
     ? "from-[#fbc7d4]/25 to-[#9796f0]/25"
     : "from-[#91EAE4]/30 via-[#86A8E7]/30 to-[#7F7FD5]/30";
 
-  const InnerComponent = () => {
+  const innerComponent = (() => {
     switch (authorizationStatus) {
       case AUTH_STATUS.LOADING: {
         return (
@@ -144,7 +142,7 @@ export default function Layout({
         return children;
       }
     }
-  };
+  })();
 
   return (
     <div
@@ -175,7 +173,7 @@ export default function Layout({
         transition={noAnim ? undefined : contentVariants.transition}
         className={`flex-grow ${className}`}
       >
-        <InnerComponent />
+        {innerComponent}
       </m.div>
 
       {(userProtected || adminProtected) && <Footer />}
