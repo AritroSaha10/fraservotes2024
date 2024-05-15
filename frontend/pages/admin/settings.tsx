@@ -90,6 +90,7 @@ function AdminConfigPageComponent() {
         );
     }
 
+    // TODO: Improve later to be nicer
     if (loading) {
         return (
             <Typography variant="h1">Loading...</Typography>
