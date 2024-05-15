@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Button, Input, Typography } from "@material-tailwind/react";
 import { sha256 } from "@/util/hashUsingSHA256";
-import { gql, useApolloClient, useLazyQuery, useQuery } from "@apollo/client";
+import { OperationVariables, QueryResult, gql, useApolloClient, useLazyQuery, useQuery } from "@apollo/client";
 import Swal from 'sweetalert2'
 import Image from "next/image";
 import { createMessage, encrypt, readKey } from 'openpgp';
@@ -15,7 +15,7 @@ enum PageStatus {
     VOTING
 }
 
-const votingStatusQuery = gql`
+const votingStatusQueryOp = gql`
 query Query($filter: VotingStatusFilter!) {
   votingStatus(filter: $filter) {
     voted
@@ -23,7 +23,7 @@ query Query($filter: VotingStatusFilter!) {
 }
 `;
 
-const candidatesQuery = gql`
+const candidatesQueryOp = gql`
 query Query {
   candidates {
     _id
@@ -44,15 +44,16 @@ query Query {
 }
 `;
 
-const publicKeyQuery = gql`
+const configQueryOp = gql`
 query Query {
   config {
+    isOpen
     publicKey
   }
 }
 `;
 
-const submitBallotMutation = gql`
+const submitBallotMutationOp = gql`
 mutation Mutation($studentNumber: Int!, $encryptedBallot: String!) {
   submitBallot(studentNumber: $studentNumber, encryptedBallot: $encryptedBallot) {
     void
@@ -67,13 +68,15 @@ interface CheckInSectionProps {
     setStudentNumberInput: Dispatch<SetStateAction<string>>;
     pageStatus: PageStatus;
     setPageStatus: Dispatch<SetStateAction<PageStatus>>;
+    configQuery: QueryResult<any, OperationVariables>;
 }
 
 interface VotingSectionProps {
     studentNumber: string;
     pageStatus: PageStatus;
     setPageStatus: Dispatch<SetStateAction<PageStatus>>;
-    setStudentNumberInput: Dispatch<SetStateAction<string>>
+    setStudentNumberInput: Dispatch<SetStateAction<string>>;
+    configQuery: QueryResult<any, OperationVariables>;
 }
 
 interface Candidate {
@@ -94,8 +97,9 @@ interface Position {
     spotsAvailable: number;
 }
 
-function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumberInput, setStudentNumberInput, pageStatus, setPageStatus }: CheckInSectionProps) {
+function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumberInput, setStudentNumberInput, pageStatus, setPageStatus, configQuery }: CheckInSectionProps) {
     const [volunteerKeyHash, setVolunteerKeyHash] = useState<string | null>(null);
+    const { loading: configLoading, error: configError, data: configData } = configQuery;
 
     const client = useApolloClient();
 
@@ -111,6 +115,33 @@ function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumber
             setVolunteerKeyHash(hash);
         }
     }, []);
+
+    if (configLoading) return <Typography variant="h1">Loading...</Typography>
+    if (configError) {
+        Swal.fire({
+            title: "Something went wrong",
+            text: "Something went wrong while loading some data. Please try again.",
+            icon: "error"
+        });
+        console.error(configError);
+        return (
+            <Typography variant="h1" color="red">Something went wrong :&#41;</Typography>
+        )
+    }
+    
+    if (!configData.config.isOpen) {
+        return (
+            <>
+                <Typography variant="h1" className="mb-4">
+                    Voting Check-In
+                </Typography>
+
+                <Typography variant="lead" className="lg:w-3/4 text-red-500 text-center">
+                    Voting is currently closed. Please come back to this website later when voting is open.
+                </Typography>
+            </>
+        )
+    }
 
     const onSubmit = async (e: any) => {
         e.preventDefault();
@@ -144,7 +175,7 @@ function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumber
             // Now check if the student has already voted or not
             try {
                 const { data } = await client.query({
-                    query: votingStatusQuery,
+                    query: votingStatusQueryOp,
                     variables: { 
                         filter: {
                             studentNumber
@@ -273,9 +304,9 @@ const CandidateSelection: React.FC<CandidateSelectionProps> = ({ candidates, sel
     );
 }
 
-function VotingSection({ pageStatus, setPageStatus, studentNumber, setStudentNumberInput }: VotingSectionProps) {
-    const { loading: candidateDataLoading, error: candidateDataError, data: candidateData } = useQuery(candidatesQuery);
-    const { loading: pgpKeyLoading, error: pgpKeyError, data: pgpKeyData } = useQuery(publicKeyQuery);
+function VotingSection({ pageStatus, setPageStatus, studentNumber, setStudentNumberInput, configQuery }: VotingSectionProps) {
+    const { loading: candidateDataLoading, error: candidateDataError, data: candidateData } = useQuery(candidatesQueryOp);
+    const { loading: configLoading, error: configError, data: configData } = configQuery;
 
     const [selectedCandidates, setSelectedCandidates] = useState<Record<string, Candidate[]>>({});
     const [submittingBallot, setSubmittingBallot] = useState(false);
@@ -306,14 +337,15 @@ function VotingSection({ pageStatus, setPageStatus, studentNumber, setStudentNum
         });
     };
 
-    if (candidateDataLoading || pgpKeyLoading) return <Typography variant="h1">Loading...</Typography>
-    if (candidateDataError || pgpKeyError) {
+    if (candidateDataLoading || configLoading) return <Typography variant="h1">Loading...</Typography>
+    if (candidateDataError || configError) {
         Swal.fire({
             title: "Something went wrong",
             text: "Something went wrong while loading some data. Please try again.",
             icon: "error"
         });
-        console.error(candidateDataError);
+        if (candidateDataError) console.error("Error while loading candidate data:", candidateDataError);
+        if (configError) console.error("Error while loading config data:", configError)
         setPageStatus(PageStatus.CHECKIN);
         return (
             <Typography variant="h1" color="red">Something went wrong :&#41;</Typography>
@@ -376,8 +408,8 @@ function VotingSection({ pageStatus, setPageStatus, studentNumber, setStudentNum
 
             
             // Encrypt using PGP
-            console.log(pgpKeyData.config.publicKey)
-            const publicKey = await readKey({ armoredKey: pgpKeyData.config.publicKey });
+            console.log(configData.config.publicKey)
+            const publicKey = await readKey({ armoredKey: configData.config.publicKey });
             const encryptedBallot = String(await encrypt({
                 message: await createMessage({ text: JSON.stringify(ballot) }),
                 encryptionKeys: publicKey,
@@ -386,7 +418,7 @@ function VotingSection({ pageStatus, setPageStatus, studentNumber, setStudentNum
             
             // Finally, submit to server
             const res = await client.mutate({
-                mutation: submitBallotMutation,
+                mutation: submitBallotMutationOp,
                 variables: {
                     studentNumber: Number(studentNumber),
                     encryptedBallot: encryptedBallot
@@ -466,16 +498,15 @@ export default function VolunteerCheckIn() {
     const [studentNumberInput, setStudentNumberInput] = useState("");
 
     const [pageStatus, setPageStatus] = useState<PageStatus>(PageStatus.CHECKIN);
+    const configQuery = useQuery(configQueryOp);
 
     return (
         <Layout name="Check-in" userProtected className="flex flex-col items-center justify-center py-8">
             {pageStatus === PageStatus.VOTING ? (
-                <VotingSection pageStatus={pageStatus} setPageStatus={setPageStatus} studentNumber={studentNumberInput} setStudentNumberInput={setStudentNumberInput} />
+                <VotingSection pageStatus={pageStatus} setPageStatus={setPageStatus} studentNumber={studentNumberInput} setStudentNumberInput={setStudentNumberInput} configQuery={configQuery} />
             ) : (
-<CheckInSection volunteerKeyInput={volunteerKeyInput} setVolunteerKeyInput={setVolunteerKeyInput} studentNumberInput={studentNumberInput} setStudentNumberInput={setStudentNumberInput} pageStatus={pageStatus} setPageStatus={setPageStatus} />
+<CheckInSection volunteerKeyInput={volunteerKeyInput} setVolunteerKeyInput={setVolunteerKeyInput} studentNumberInput={studentNumberInput} setStudentNumberInput={setStudentNumberInput} pageStatus={pageStatus} setPageStatus={setPageStatus} configQuery={configQuery} />
             )}
         </Layout>
     )
-
-
 }

@@ -32,10 +32,10 @@ const updateConfig = async (_, args: { newConfig: ConfigInput }, contextValue: M
 
     let newConfig: ConfigDocument;
     // Set public key first since it's required to open voting
-    if (args.newConfig.publicKey !== undefined || args.newConfig.publicKey !== null) {
+    if (args.newConfig.publicKey !== undefined && args.newConfig.publicKey !== null) {
         newConfig = await contextValue.dataSources.config.updatePublicKey(args.newConfig.publicKey);
     }
-    if (args.newConfig.isOpen !== undefined || args.newConfig.isOpen !== null) {
+    if (args.newConfig.isOpen !== undefined && args.newConfig.isOpen !== null) {
         newConfig = await contextValue.dataSources.config.updateVotingOpen(args.newConfig.isOpen);
     }
 
