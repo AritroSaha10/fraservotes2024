@@ -25,10 +25,10 @@ type DecryptedBallot {
 
 input SelectedBallotOptionInput {
   position: ID!
-  candidate: ID!
+  candidates: [ID!]!
 }
 
 type SelectedBallotOption {
   position: Position!
-  candidate: Candidate!
+  candidates: [Candidate!]!
 }

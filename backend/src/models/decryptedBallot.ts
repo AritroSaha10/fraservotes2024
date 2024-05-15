@@ -3,7 +3,7 @@ import { Document, ObjectId, Schema, model } from 'mongoose';
 // Ballot interface
 export interface SelectedOption {
     position: ObjectId;
-    candidate: ObjectId;
+    candidates: ObjectId[];
 }
 
 export interface DecryptedBallotDocument extends Document {
@@ -14,7 +14,7 @@ export interface DecryptedBallotDocument extends Document {
 // Ballot Schema
 const selectedOptionSchema = new Schema<SelectedOption>({
     position: { type: Schema.ObjectId, ref: "Position", required: true },
-    candidate: { type: Schema.ObjectId, ref: "Candidate", required: true },
+    candidates: [{ type: Schema.ObjectId, ref: "Candidate", required: true }],
 }, { _id : false })
 
 const decryptedBallotSchema = new Schema<DecryptedBallotDocument>({

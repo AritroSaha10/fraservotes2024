@@ -40,8 +40,10 @@ const resolvers = {
         position(parent, _, contextValue: MyContext) {
             return contextValue.dataSources.positions.getPosition(parent.position.toString())
         },
-        candidate(parent, _, contextValue: MyContext) {
-            return contextValue.dataSources.candidates.getCandidate(parent.candidate.toString())
+        candidates(parent, _, contextValue: MyContext) {
+            return Promise.all(parent.candidates.map((candidateId: any) => 
+                contextValue.dataSources.candidates.getCandidate(candidateId.toString())
+            ));
         }
     }
 };
