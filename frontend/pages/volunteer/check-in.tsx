@@ -8,6 +8,7 @@ import { sha256 } from "@/util/hashUsingSHA256";
 import { gql, useApolloClient, useLazyQuery, useQuery } from "@apollo/client";
 import Swal from 'sweetalert2'
 import Image from "next/image";
+import { createMessage, encrypt, readKey } from 'openpgp';
 
 enum PageStatus {
     CHECKIN,
@@ -43,6 +44,22 @@ query Query {
 }
 `;
 
+const publicKeyQuery = gql`
+query Query {
+  config {
+    publicKey
+  }
+}
+`;
+
+const submitBallotMutation = gql`
+mutation Mutation($studentNumber: Int!, $encryptedBallot: String!) {
+  submitBallot(studentNumber: $studentNumber, encryptedBallot: $encryptedBallot) {
+    void
+  }
+}
+`;
+
 interface CheckInSectionProps {
     volunteerKeyInput: string;
     setVolunteerKeyInput: Dispatch<SetStateAction<string>>;
@@ -56,6 +73,7 @@ interface VotingSectionProps {
     studentNumber: string;
     pageStatus: PageStatus;
     setPageStatus: Dispatch<SetStateAction<PageStatus>>;
+    setStudentNumberInput: Dispatch<SetStateAction<string>>
 }
 
 interface Candidate {
@@ -77,8 +95,6 @@ interface Position {
 }
 
 function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumberInput, setStudentNumberInput, pageStatus, setPageStatus }: CheckInSectionProps) {
-    const { user, loaded } = useFirebaseAuth();
-    const router = useRouter();
     const [volunteerKeyHash, setVolunteerKeyHash] = useState<string | null>(null);
 
     const client = useApolloClient();
@@ -133,7 +149,8 @@ function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumber
                         filter: {
                             studentNumber
                         }
-                    }
+                    },
+                    fetchPolicy: 'no-cache'
                 })
                 if (data.votingStatus === null) {
                     Swal.fire({
@@ -151,6 +168,9 @@ function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumber
                     return;
                 }
 
+                // Clear password before switching so it doesn't show up once the user's done voting
+                setVolunteerKeyInput("");
+                
                 setPageStatus(PageStatus.VOTING);
             } catch (err) {
                 console.error(err)
@@ -210,32 +230,90 @@ function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumber
     )
 }
 
-function CandidateCard({ candidate }: { candidate: Candidate }) {
-    const [selected, setSelected] = useState(false);
+interface CandidateCardProps {
+    candidate: Candidate;
+    isSelected: boolean;
+    onSelect: () => void;
+}
 
+const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, isSelected, onSelect }) => {
     return (
-        <div className={`select-none flex items-center gap-2 px-4 py-2 bg-white shadow-lg rounded-xl ${selected && "outline outline-2 outline-green-500"} active:outline-green-700 hover:bg-green-50 active:outline active:outline-2 hover:cursor-pointer transition-all duration-100`} onClick={() => setSelected(!selected)}>
+        <div
+            className={`select-none flex items-center gap-2 px-4 py-2 bg-white shadow-lg rounded-xl ${isSelected && "outline outline-2 outline-green-500"} active:outline-green-700 hover:bg-green-50 active:outline active:outline-2 hover:cursor-pointer transition-all duration-100`}
+            onClick={onSelect}
+        >
             <Image src={candidate.picture} width={64} height={64} className="rounded-lg object-cover aspect-square" alt="" />
             <div>
                 <Typography className="text-md font-semibold">{candidate.fullName}</Typography>
                 <Typography className="text-sm mb-[4px]">Grade {candidate.grade}</Typography>
-                <Typography className="text-xs font-light text-gray-700 tracking-tight">Click me to {selected ? "deselect" : "select"} me...</Typography>
+                <Typography className="text-xs font-light text-gray-700 tracking-tight">Click me to {isSelected ? "deselect" : "select"} me...</Typography>
             </div>
         </div>
-    )
+    );
 }
 
-function VotingSection({ pageStatus, setPageStatus, studentNumber }: VotingSectionProps) {
-    const { loading, error, data } = useQuery(candidatesQuery);
+interface CandidateSelectionProps {
+    candidates: Candidate[];
+    selectedCandidates: Candidate[];
+    onSelect: (candidate: Candidate) => void;
+}
 
-    if (loading) return <Typography variant="h1">Loading...</Typography>
-    if (error) {
+const CandidateSelection: React.FC<CandidateSelectionProps> = ({ candidates, selectedCandidates, onSelect }) => {
+    return (
+        <div className="flex gap-4 flex-wrap max-w-[75vw]">
+            {candidates.map(candidate => (
+                <CandidateCard
+                    key={candidate._id}
+                    candidate={candidate}
+                    isSelected={selectedCandidates.includes(candidate)}
+                    onSelect={() => onSelect(candidate)}
+                />
+            ))}
+        </div>
+    );
+}
+
+function VotingSection({ pageStatus, setPageStatus, studentNumber, setStudentNumberInput }: VotingSectionProps) {
+    const { loading: candidateDataLoading, error: candidateDataError, data: candidateData } = useQuery(candidatesQuery);
+    const { loading: pgpKeyLoading, error: pgpKeyError, data: pgpKeyData } = useQuery(publicKeyQuery);
+
+    const [selectedCandidates, setSelectedCandidates] = useState<Record<string, Candidate[]>>({});
+    const [submittingBallot, setSubmittingBallot] = useState(false);
+
+    const client = useApolloClient();
+
+    const handleSelect = (positionId: string, candidate: Candidate) => {
+        setSelectedCandidates(prevState => {
+            const positionSelectedCandidates = prevState[positionId] || [];
+            if (positionSelectedCandidates.includes(candidate)) {
+                return {
+                    ...prevState,
+                    [positionId]: positionSelectedCandidates.filter(c => c !== candidate)
+                };
+            } else {
+                if (positionSelectedCandidates.length >= positions[positionId].spotsAvailable) {
+                    return {
+                        ...prevState,
+                        [positionId]: [...positionSelectedCandidates.slice(1), candidate]
+                    };
+                } else {
+                    return {
+                        ...prevState,
+                        [positionId]: [...positionSelectedCandidates, candidate]
+                    };
+                }
+            }
+        });
+    };
+
+    if (candidateDataLoading || pgpKeyLoading) return <Typography variant="h1">Loading...</Typography>
+    if (candidateDataError || pgpKeyError) {
         Swal.fire({
             title: "Something went wrong",
-            text: "Something went wrong while loading candidate info. Please try again.",
+            text: "Something went wrong while loading some data. Please try again.",
             icon: "error"
         });
-        console.error(error);
+        console.error(candidateDataError);
         setPageStatus(PageStatus.CHECKIN);
         return (
             <Typography variant="h1" color="red">Something went wrong :&#41;</Typography>
@@ -245,8 +323,8 @@ function VotingSection({ pageStatus, setPageStatus, studentNumber }: VotingSecti
     // Sort candidates by position, then sort each candidates by 
     // console.log(data)
 
-    const candidates: Candidate[] = data.candidates;
-    const positions: Record<string, Position> = Object.fromEntries(data.positions.map((pos: Position) => [pos._id, pos]));
+    const candidates: Candidate[] = candidateData.candidates;
+    const positions: Record<string, Position> = Object.fromEntries(candidateData.positions.map((pos: Position) => [pos._id, pos]));
 
     // Create an empty dictionary to hold the grouped candidates
     const groupedCandidates: Record<string, Candidate[]> = candidates.reduce((acc, candidate) => {
@@ -258,37 +336,127 @@ function VotingSection({ pageStatus, setPageStatus, studentNumber }: VotingSecti
         return acc;
     }, {} as Record<string, Candidate[]>);
 
-    console.log(groupedCandidates)
+    const submitBallot: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.preventDefault();
+        setSubmittingBallot(true);
+
+        (async () => {
+            console.log(selectedCandidates)
+
+            // Make sure each section has the correct number of selections
+            const ballotIncomplete = Object.keys(groupedCandidates).some(positionId => {
+                const position = positions[positionId];
+                if (!(positionId in selectedCandidates) || selectedCandidates[positionId].length !== position.spotsAvailable) {
+                    Swal.fire({
+                        title: "Incomplete ballot",
+                        text: `Please select the correct number of candidates (${position.spotsAvailable}) for the following position: ${position.name}.`,
+                        icon: "error"
+                    });
+
+                    // Exit the loop immediately
+                    return true;
+                }
+
+                // Seems to be fine, keep going
+                return false;
+            });
+
+            if (ballotIncomplete) {
+                return;
+            }
+
+            // Prepare raw data into what will be encrypted and sent to server
+            const ballot = {
+                timestampUTC: Math.floor(Date.now() / 1000),
+                selectedOptions: Object.keys(selectedCandidates).map(positionId => ({
+                    position: positionId,
+                    candidates: selectedCandidates[positionId].map(candidate => candidate._id)
+                }))
+            }
+
+            
+            // Encrypt using PGP
+            console.log(pgpKeyData.config.publicKey)
+            const publicKey = await readKey({ armoredKey: pgpKeyData.config.publicKey });
+            const encryptedBallot = String(await encrypt({
+                message: await createMessage({ text: JSON.stringify(ballot) }),
+                encryptionKeys: publicKey,
+            }));
+            console.log(encryptedBallot)
+            
+            // Finally, submit to server
+            const res = await client.mutate({
+                mutation: submitBallotMutation,
+                variables: {
+                    studentNumber: Number(studentNumber),
+                    encryptedBallot: encryptedBallot
+                },
+                fetchPolicy: 'no-cache'
+            })
+
+            if (res.errors) {
+                Swal.fire({
+                    title: "Something went wrong",
+                    text: "Something went wrong while submitting your ballot. Please try again.",
+                    icon: "error"
+                });
+                console.error(res.errors)
+            } else {
+                Swal.fire({
+                    title: "Vote submitted",
+                    text: "Your vote has been submitted, thank you!",
+                    icon: "success"
+                });
+                setPageStatus(PageStatus.CHECKIN);
+
+                // Reset student number since it's no longer needed / new person will be voting
+                setStudentNumberInput("");
+            }
+        })().catch(e => {
+            Swal.fire({
+                title: "Something went wrong",
+                text: "Something went wrong while submitting your ballot. Please try again.",
+                icon: "error"
+            });
+            console.error(e);
+        }).finally(() => {
+            setSubmittingBallot(false);
+        })
+    }
 
     return (
         <>
-        <Typography variant="h1" className="mb-1">Your Ballot</Typography>
-        <Typography variant="paragraph" className="mb-4">This ballot solely belongs to the student {studentNumber}.</Typography>
+            <Typography variant="h1" className="mb-1">Your Ballot</Typography>
+            <Typography variant="paragraph" className="mb-4">This ballot solely belongs to the student {studentNumber}.</Typography>
 
-        <div className="flex flex-col gap-6">
-            {Object.keys(groupedCandidates).map(positionId => {
-                const position = positions[positionId];
-                const positionCandidates = groupedCandidates[positionId].sort((a, b) => {
-                    if (a.fullName < b.fullName) return -1;
-                    if (a.fullName > b.fullName) return 1;
-                    return 0;
-                });
+            <div className="flex flex-col gap-6 mb-6">
+                {Object.keys(groupedCandidates).map(positionId => {
+                    const position = positions[positionId];
+                    const positionCandidates = groupedCandidates[positionId].sort((a, b) => {
+                        if (a.fullName < b.fullName) return -1;
+                        if (a.fullName > b.fullName) return 1;
+                        return 0;
+                    });
 
-                return (
-                    <div className="flex flex-col">
-                        <Typography variant="h2" className="mb-2">
-                            {position.name} (Select {position.spotsAvailable})
-                        </Typography>
+                    return (
+                        <div className="flex flex-col">
+                            <Typography variant="h2" className="mb-2">
+                                {position.name} (Select {position.spotsAvailable})
+                            </Typography>
 
-                        <div className="flex gap-4 flex-wrap max-w-[75vw]">
-                            {positionCandidates.map(candidate => (
-                                <CandidateCard candidate={candidate} />
-                            ))}
+                            <CandidateSelection
+                                candidates={positionCandidates}
+                                selectedCandidates={selectedCandidates[positionId] || []}
+                                onSelect={(candidate) => handleSelect(positionId, candidate)}
+                            />
                         </div>
-                    </div>
-                )
-            })}
-        </div>
+                    )
+                })}
+            </div>
+
+            <Button variant="filled" size="lg" color="blue" disabled={submittingBallot} onClick={submitBallot}>
+                Submit Ballot
+            </Button>
         </>
     )
 }
@@ -302,7 +470,7 @@ export default function VolunteerCheckIn() {
     return (
         <Layout name="Check-in" userProtected className="flex flex-col items-center justify-center py-8">
             {pageStatus === PageStatus.VOTING ? (
-                <VotingSection pageStatus={pageStatus} setPageStatus={setPageStatus} studentNumber={studentNumberInput} />
+                <VotingSection pageStatus={pageStatus} setPageStatus={setPageStatus} studentNumber={studentNumberInput} setStudentNumberInput={setStudentNumberInput} />
             ) : (
 <CheckInSection volunteerKeyInput={volunteerKeyInput} setVolunteerKeyInput={setVolunteerKeyInput} studentNumberInput={studentNumberInput} setStudentNumberInput={setStudentNumberInput} pageStatus={pageStatus} setPageStatus={setPageStatus} />
             )}

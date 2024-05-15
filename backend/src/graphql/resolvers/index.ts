@@ -22,13 +22,13 @@ const resolvers = {
         decryptedBallotCount: getDecryptedBallotCount,
         votingStatuses: getVotingStatusesResolver,
         votingStatus: getVotingStatusResolver,
-        resetVotingStatuses: clearVotingStatusesResolver,
         config: getConfigResolver,
     },
     Mutation: {
         submitBallot,
         addDecryptedBallot,
         deleteBallots,
+        resetVotingStatuses: clearVotingStatusesResolver,
         updateConfig,
     },
     Candidate: {

@@ -24,6 +24,6 @@ export default class VotingStatuses extends MongoDataSource<VotingStatusDocument
   }
 
   clearVotingStatuses() {
-    return this.model.updateMany({}, { voted: false });
+    return this.model.updateMany({ voted: true }, { "$set": { voted: false } });
   }
 }
