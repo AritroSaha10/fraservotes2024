@@ -2,11 +2,17 @@ import { useFirebaseAuth } from "@/components/FirebaseAuthContext";
 import Layout from "@/components/Layout";
 import { generateVolunteerKey, getVolunteerKeyHash, volunteerKeyLocalStorageKey } from "@/util/volunteerKey";
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Button, Input, Typography } from "@material-tailwind/react";
 import { sha256 } from "@/util/hashUsingSHA256";
-import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
+import { gql, useApolloClient, useLazyQuery, useQuery } from "@apollo/client";
 import Swal from 'sweetalert2'
+import Image from "next/image";
+
+enum PageStatus {
+    CHECKIN,
+    VOTING
+}
 
 const votingStatusQuery = gql`
 query Query($filter: VotingStatusFilter!) {
@@ -16,13 +22,64 @@ query Query($filter: VotingStatusFilter!) {
 }
 `;
 
-export default function VolunteerCheckIn() {
+const candidatesQuery = gql`
+query Query {
+  candidates {
+    _id
+    biography
+    campaignVideo
+    fullName
+    grade
+    picture
+    position {
+      _id
+    }
+  }
+  positions {
+    _id
+    name
+    spotsAvailable
+  }
+}
+`;
+
+interface CheckInSectionProps {
+    volunteerKeyInput: string;
+    setVolunteerKeyInput: Dispatch<SetStateAction<string>>;
+    studentNumberInput: string;
+    setStudentNumberInput: Dispatch<SetStateAction<string>>;
+    pageStatus: PageStatus;
+    setPageStatus: Dispatch<SetStateAction<PageStatus>>;
+}
+
+interface VotingSectionProps {
+    studentNumber: string;
+    pageStatus: PageStatus;
+    setPageStatus: Dispatch<SetStateAction<PageStatus>>;
+}
+
+interface Candidate {
+    _id: string;
+    biography: string;
+    campaignVideo: string;
+    fullName: string;
+    grade: number;
+    picture: string;
+    position: {
+        _id: string;
+    };
+}
+
+interface Position {
+    _id: string;
+    name: string;
+    spotsAvailable: number;
+}
+
+function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumberInput, setStudentNumberInput, pageStatus, setPageStatus }: CheckInSectionProps) {
     const { user, loaded } = useFirebaseAuth();
     const router = useRouter();
     const [volunteerKeyHash, setVolunteerKeyHash] = useState<string | null>(null);
-
-    const [volunteerKeyInput, setVolunteerKeyInput] = useState("");
-    const [studentNumberInput, setStudentNumberInput] = useState("");
 
     const client = useApolloClient();
 
@@ -93,6 +150,8 @@ export default function VolunteerCheckIn() {
                     });
                     return;
                 }
+
+                setPageStatus(PageStatus.VOTING);
             } catch (err) {
                 console.error(err)
                 return;
@@ -103,7 +162,7 @@ export default function VolunteerCheckIn() {
     }
     
     return (
-        <Layout name="Check-in" userProtected className="flex flex-col items-center justify-center">
+        <>
             <Typography variant="h1" className="mb-4">
                 Voting Check-In
             </Typography>
@@ -147,6 +206,108 @@ export default function VolunteerCheckIn() {
             <Button color="blue" onClick={onSubmit} disabled={checkInLoading}>
                 Check-In
             </Button>
+        </>
+    )
+}
+
+function CandidateCard({ candidate }: { candidate: Candidate }) {
+    const [selected, setSelected] = useState(false);
+
+    return (
+        <div className={`select-none flex items-center gap-2 px-4 py-2 bg-white shadow-lg rounded-xl ${selected && "outline outline-2 outline-green-500"} active:outline-green-700 hover:bg-green-50 active:outline active:outline-2 hover:cursor-pointer transition-all duration-100`} onClick={() => setSelected(!selected)}>
+            <Image src={candidate.picture} width={64} height={64} className="rounded-lg object-cover aspect-square" alt="" />
+            <div>
+                <Typography className="text-md font-semibold">{candidate.fullName}</Typography>
+                <Typography className="text-sm mb-[4px]">Grade {candidate.grade}</Typography>
+                <Typography className="text-xs font-light text-gray-700 tracking-tight">Click me to {selected ? "deselect" : "select"} me...</Typography>
+            </div>
+        </div>
+    )
+}
+
+function VotingSection({ pageStatus, setPageStatus, studentNumber }: VotingSectionProps) {
+    const { loading, error, data } = useQuery(candidatesQuery);
+
+    if (loading) return <Typography variant="h1">Loading...</Typography>
+    if (error) {
+        Swal.fire({
+            title: "Something went wrong",
+            text: "Something went wrong while loading candidate info. Please try again.",
+            icon: "error"
+        });
+        console.error(error);
+        setPageStatus(PageStatus.CHECKIN);
+        return (
+            <Typography variant="h1" color="red">Something went wrong :&#41;</Typography>
+        )
+    }
+
+    // Sort candidates by position, then sort each candidates by 
+    // console.log(data)
+
+    const candidates: Candidate[] = data.candidates;
+    const positions: Record<string, Position> = Object.fromEntries(data.positions.map((pos: Position) => [pos._id, pos]));
+
+    // Create an empty dictionary to hold the grouped candidates
+    const groupedCandidates: Record<string, Candidate[]> = candidates.reduce((acc, candidate) => {
+        const positionId = candidate.position._id;
+        if (!acc[positionId]) {
+            acc[positionId] = [];
+        }
+        acc[positionId].push(candidate);
+        return acc;
+    }, {} as Record<string, Candidate[]>);
+
+    console.log(groupedCandidates)
+
+    return (
+        <>
+        <Typography variant="h1" className="mb-1">Your Ballot</Typography>
+        <Typography variant="paragraph" className="mb-4">This ballot solely belongs to the student {studentNumber}.</Typography>
+
+        <div className="flex flex-col gap-6">
+            {Object.keys(groupedCandidates).map(positionId => {
+                const position = positions[positionId];
+                const positionCandidates = groupedCandidates[positionId].sort((a, b) => {
+                    if (a.fullName < b.fullName) return -1;
+                    if (a.fullName > b.fullName) return 1;
+                    return 0;
+                });
+
+                return (
+                    <div className="flex flex-col">
+                        <Typography variant="h2" className="mb-2">
+                            {position.name} (Select {position.spotsAvailable})
+                        </Typography>
+
+                        <div className="flex gap-4 flex-wrap max-w-[75vw]">
+                            {positionCandidates.map(candidate => (
+                                <CandidateCard candidate={candidate} />
+                            ))}
+                        </div>
+                    </div>
+                )
+            })}
+        </div>
+        </>
+    )
+}
+
+export default function VolunteerCheckIn() {
+    const [volunteerKeyInput, setVolunteerKeyInput] = useState("");
+    const [studentNumberInput, setStudentNumberInput] = useState("");
+
+    const [pageStatus, setPageStatus] = useState<PageStatus>(PageStatus.CHECKIN);
+
+    return (
+        <Layout name="Check-in" userProtected className="flex flex-col items-center justify-center py-8">
+            {pageStatus === PageStatus.VOTING ? (
+                <VotingSection pageStatus={pageStatus} setPageStatus={setPageStatus} studentNumber={studentNumberInput} />
+            ) : (
+<CheckInSection volunteerKeyInput={volunteerKeyInput} setVolunteerKeyInput={setVolunteerKeyInput} studentNumberInput={studentNumberInput} setStudentNumberInput={setStudentNumberInput} pageStatus={pageStatus} setPageStatus={setPageStatus} />
+            )}
         </Layout>
     )
+
+
 }
