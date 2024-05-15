@@ -22,6 +22,7 @@ import { UnauthorizedComponent } from "@/pages/401";
 import { ForbiddenComponent } from "@/pages/403";
 import { NoAccessComponent } from "@/pages/no-access";
 import useIsRouterLoading from "./useIsRouterLoading";
+import AdminNavbar from "./admin/AdminNavbar";
 // import AdminRestrictedPage from "@/components/admin/AdminRestrictedPage";
 // import { ComplexNavbar as AdminNavbar } from "@/components/admin/Navbar";
 // import { ComplexNavbar as UserNavbar } from "@/components/user/Navbar";
@@ -107,11 +108,9 @@ export default function Layout({
   }, [user, loaded, isRouterLoading]);
 
   let navbar: JSX.Element | null = null;
-  // if (adminProtected) {
-  //     navbar = <AdminNavbar />;
-  // } else if (userProtected) {
-  //     navbar = <UserNavbar />;
-  // }
+  if (adminProtected) {
+      navbar = <AdminNavbar />;
+  }
 
   const backgroundGradient = adminProtected
     ? "from-[#fbc7d4]/25 to-[#9796f0]/25"
@@ -176,7 +175,7 @@ export default function Layout({
         {innerComponent}
       </m.div>
 
-      {(userProtected || adminProtected) && <Footer />}
+      {(userProtected || adminProtected) && <Footer showLink={adminProtected} />}
     </div>
   );
 }

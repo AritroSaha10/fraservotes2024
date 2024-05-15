@@ -1,6 +1,8 @@
 extend type Query {
   votingStatuses: [VotingStatus!]!
   votingStatus(filter: VotingStatusFilter!): VotingStatus
+  votingStatusesCount: Int!
+  completedVotingStatusesCount: Int!
 }
 
 extend type Mutation {

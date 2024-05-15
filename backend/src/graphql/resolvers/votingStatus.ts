@@ -39,6 +39,24 @@ const getVotingStatusResolver = async (_, args: { filter: VotingStatusFilter }, 
     }
 };
 
+const getVotingStatusesCountResolver = async (_, __, contextValue: MyContext) => {
+    // Sensitive action, need to verify whether they are authorized
+    const auth = getAuth();
+    await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
+    validateIfAdmin(contextValue.authTokenDecoded);
+
+    return contextValue.dataSources.votingStatuses.getVotingStatusesCount();
+}
+
+const getCompletedVotingStatusesCountResolver = async (_, __, contextValue: MyContext) => {
+    // Sensitive action, need to verify whether they are authorized
+    const auth = getAuth();
+    await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
+    validateIfAdmin(contextValue.authTokenDecoded);
+
+    return contextValue.dataSources.votingStatuses.getCompletedVotingStatusesCount();
+}
+
 const clearVotingStatusesResolver = async (_, __, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
@@ -61,4 +79,4 @@ const clearVotingStatusesResolver = async (_, __, contextValue: MyContext) => {
     return null;
 }
 
-export { getVotingStatusesResolver, getVotingStatusResolver, clearVotingStatusesResolver };
+export { getVotingStatusesResolver, getVotingStatusesCountResolver, getVotingStatusResolver, clearVotingStatusesResolver, getCompletedVotingStatusesCountResolver };

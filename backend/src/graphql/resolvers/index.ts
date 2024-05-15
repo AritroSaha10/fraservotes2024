@@ -4,7 +4,7 @@ import { getConfigResolver, updateConfig } from "./config.js";
 import { getPositionResolver, getPositionsResolver } from "./positions.js";
 import { getUserResolver, getUsersResolver } from "./user.js";
 import { addDecryptedBallot, deleteBallots, getDecryptedBallotCount, getDecryptedBallots, getEncryptedBallotCount, getEncryptedBallots, submitBallot } from "./voting.js";
-import { clearVotingStatusesResolver, getVotingStatusResolver, getVotingStatusesResolver } from "./votingStatus.js";
+import { clearVotingStatusesResolver, getCompletedVotingStatusesCountResolver, getVotingStatusResolver, getVotingStatusesCountResolver, getVotingStatusesResolver } from "./votingStatus.js";
 
 // Resolvers define how to fetch the types defined in your schema.
 // This resolver retrieves books from the "books" array above.
@@ -22,6 +22,8 @@ const resolvers = {
         decryptedBallotCount: getDecryptedBallotCount,
         votingStatuses: getVotingStatusesResolver,
         votingStatus: getVotingStatusResolver,
+        votingStatusesCount: getVotingStatusesCountResolver,
+        completedVotingStatusesCount: getCompletedVotingStatusesCountResolver,
         config: getConfigResolver,
     },
     Mutation: {

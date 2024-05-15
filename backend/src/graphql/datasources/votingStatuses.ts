@@ -15,6 +15,14 @@ export default class VotingStatuses extends MongoDataSource<VotingStatusDocument
     return this.model.find().exec();
   }
 
+  getVotingStatusesCount() {
+    return this.model.countDocuments().exec();
+  }
+
+  getCompletedVotingStatusesCount() {
+    return this.model.countDocuments({ voted: true }).exec();
+  }
+
   getVotingStatusById(id: ObjectId) {
     return this.model.findById(id).exec();
   }
