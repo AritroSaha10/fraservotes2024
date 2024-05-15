@@ -5,6 +5,7 @@ import Link from "next/link";
 import router from "next/router";
 
 import {
+    ArchiveBoxArrowDownIcon,
     ArrowRightEndOnRectangleIcon,
     Bars2Icon,
     ChevronDownIcon,
@@ -117,6 +118,11 @@ const navListItems = [
         label: "Overview",
         icon: EyeIcon,
         link: "/admin"
+    },
+    {
+        label: "Ballot Count",
+        icon: ArchiveBoxArrowDownIcon,
+        link: "/admin/count"
     },
     {
         label: "Settings",
