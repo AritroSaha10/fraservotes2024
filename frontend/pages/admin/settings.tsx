@@ -58,6 +58,7 @@ export default function AdminConfigPage() {
         creationDate: string;
         userIDs: string[];
     } | null>(null);
+    const [busy, setBusy] = useState(false); // True when anything's being done in any of the sections
 
     useEffect(() => {
         if (data?.config?.publicKey) {
@@ -98,6 +99,8 @@ export default function AdminConfigPage() {
     const { config, encryptedBallotCount } = data!;
 
     const handleToggleVoting = async () => {
+        setBusy(true);
+
         try {
             const newConfig = { isOpen: !config.isOpen };
             await updateConfig({ variables: { newConfig } });
@@ -115,9 +118,13 @@ export default function AdminConfigPage() {
                 icon: "error",
             });
         }
+
+        setBusy(false);
     };
 
     const handlePublicKeyChange = async (event: ChangeEvent<HTMLInputElement>) => {
+        setBusy(true);
+        
         const file = event.target.files?.[0];
         if (file) {
             const reader = new FileReader();
@@ -126,6 +133,16 @@ export default function AdminConfigPage() {
                 try {
                     const publicKeyObject = await openpgp.readKey({ armoredKey: publicKey });
                     if (publicKeyObject) {
+                        if (publicKeyObject.isPrivate()) {
+                            Swal.fire({
+                                title: "Private Key Uploaded",
+                                text: "Please upload a public key instead of a private key. You can usually differentiate them by the suffix on the filename (sec -> private, pub -> public).",
+                                icon: 'error'
+                            });
+                            setBusy(false);
+                            return;
+                        }
+
                         Swal.fire({
                             title: 'Confirm Public Key Upload',
                             text: 'Are you sure you want to upload this public key?',
@@ -144,7 +161,11 @@ export default function AdminConfigPage() {
                                 });
                                 refetch();
                             }
+                        }).finally(() => {
+                            setBusy(false);
                         });
+                    } else {
+                        setBusy(false);
                     }
                 } catch (err) {
                     console.error("Invalid public key:", err);
@@ -153,6 +174,7 @@ export default function AdminConfigPage() {
                         text: "Failed to update public key. Please ensure it is a valid OpenPGP public key.",
                         icon: "error",
                     });
+                    setBusy(false);
                 } finally {
                     // Clear file ref once loaded, not needed anymore
                     event.target.value = "";
@@ -224,6 +246,7 @@ export default function AdminConfigPage() {
                     <Button
                         color={config.isOpen ? "red" : "green"}
                         onClick={handleToggleVoting}
+                        disabled={busy}
                     >
                         {config.isOpen ? "Close Voting" : "Open Voting"}
                     </Button>
@@ -249,7 +272,7 @@ export default function AdminConfigPage() {
                             type="file"
                             accept=".asc"
                             onChange={handlePublicKeyChange}
-                            disabled={config.isOpen || encryptedBallotCount > 0}
+                            disabled={busy || config.isOpen || encryptedBallotCount > 0}
                         />
                     </div>
                     </Tooltip>
@@ -264,7 +287,7 @@ export default function AdminConfigPage() {
                     <Button
                         color="red"
                         onClick={handleResetData}
-                        disabled={config.isOpen}
+                        disabled={busy || config.isOpen}
                     >
                         Reset Data
                     </Button>
