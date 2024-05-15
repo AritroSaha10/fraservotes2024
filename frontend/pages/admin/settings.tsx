@@ -49,7 +49,7 @@ interface UpdateConfigVariables {
     newConfig: Partial<Config>;
 }
 
-export default function AdminConfigPage() {
+function AdminConfigPageComponent() {
     const { loading, error, data, refetch } = useQuery<MainData>(MAIN_DATA_QUERY, { pollInterval: 5000 });
     const [updateConfig] = useMutation<UpdateConfigVariables>(UPDATE_CONFIG_MUTATION);
     const [resetVoting] = useMutation(RESET_VOTING_MUTATION);
@@ -232,7 +232,7 @@ export default function AdminConfigPage() {
     };
 
     return (
-        <Layout name="Settings" adminProtected className="flex flex-col p-8 items-center">
+        <>
             <Typography variant="h1" className="mb-8">Settings</Typography>
 
             <Card className="w-full lg:w-2/3 mb-8 shadow-lg">
@@ -293,6 +293,14 @@ export default function AdminConfigPage() {
                     </Button>
                 </CardBody>
             </Card>
-        </Layout>
+        </>
     );
+}
+
+export default function AdminConfigPage() {
+    return (
+        <Layout name="Settings" adminProtected className="flex flex-col p-8 items-center">
+            <AdminConfigPageComponent />
+        </Layout>
+    )
 }
