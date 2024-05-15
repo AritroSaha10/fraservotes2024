@@ -231,6 +231,7 @@ function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumber
                     required
                     value={volunteerKeyInput}
                     onChange={e => { setVolunteerKeyInput(e.target.value) }}
+                    autoComplete="off"
                 />
 
             </div>
@@ -250,6 +251,7 @@ function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumber
                     maxLength={7}
                     onChange={e => { setStudentNumberInput(e.target.value.replace(/\D/g,'').substring(0, 7)) }}
                     value={studentNumberInput}
+                    autoComplete="off"
                 />
 
             </div>
@@ -277,7 +279,7 @@ const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, isSelected, on
             <div>
                 <Typography className="text-md font-semibold">{candidate.fullName}</Typography>
                 <Typography className="text-sm mb-[4px]">Grade {candidate.grade}</Typography>
-                <Typography className="text-xs font-light text-gray-700 tracking-tight">Click me to {isSelected ? "deselect" : "select"} me...</Typography>
+                <Typography className="text-xs font-light text-gray-700 tracking-tight">Click to {isSelected ? "deselect" : "select"} me...</Typography>
             </div>
         </div>
     );

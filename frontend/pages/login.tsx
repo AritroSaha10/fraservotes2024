@@ -41,9 +41,7 @@ export default function Login() {
         if (!isUndefinedOrNull(claims.admin) && claims.admin === true) {
             await router.push("/admin");
         } else if (!isUndefinedOrNull(claims.volunteer) && claims.volunteer === true) {
-            // Generate a code and store into local storage
-            await generateVolunteerKey();
-            await router.push("/voting");
+            await router.push("/volunteer/check-in");
         } else {
             await Promise.all([signOut(auth), router.push("/no-access")]);
         }
