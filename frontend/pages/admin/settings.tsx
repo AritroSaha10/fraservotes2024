@@ -67,7 +67,14 @@ function AdminConfigPageComponent() {
                     const publicKeyObject = await openpgp.readKey({ armoredKey: data.config.publicKey });
                     const details = {
                         keyID: publicKeyObject.getKeyIDs()[0].toHex(),
-                        creationDate: publicKeyObject.getCreationTime().toUTCString(),
+                        creationDate: publicKeyObject.getCreationTime().toLocaleString('en-US', {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit"
+                        }),
                         userIDs: publicKeyObject.getUserIDs(),
                     };
                     setPublicKeyDetails(details);
