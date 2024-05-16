@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout"
-import { gql, useQuery } from "@apollo/client";
+import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { ArrowUpTrayIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Button, Card, CardBody, CardHeader, Input, Tooltip, Typography } from "@material-tailwind/react"
 import { ChangeEvent, useEffect, useState } from "react";
@@ -16,6 +16,16 @@ const MAIN_DATA_QUERY = gql`
   }
 `;
 
+const ENCRYPTED_BALLOTS_QUERY = gql`
+query EncryptedBallots {
+  encryptedBallots {
+    _id
+    encryptedBallot
+    timestampUTC
+  }
+}
+`
+
 interface Config {
     isOpen: boolean;
     publicKey: string;
@@ -26,8 +36,13 @@ interface MainData {
     encryptedBallotCount: number;
 }
 
+interface EncryptedBallot {
+    
+}
+
 function BallotCountPageComponent() {
     const { loading, error, data } = useQuery<MainData>(MAIN_DATA_QUERY, { pollInterval: 5000 });
+    const client = useApolloClient();
 
     const [publicKey, setPublicKey] = useState<openpgp.Key | null>();
     const [encryptedPrivateKey, setEncryptedPrivateKey] = useState<openpgp.PrivateKey | null>();
@@ -41,6 +56,7 @@ function BallotCountPageComponent() {
     const [privateKeyValid, setPrivateKeyValid] = useState(false);
 
     const [passphrase, setPassphrase] = useState<string>("");
+    const [countingBallots, setCountingBallots] = useState(false);
     const [busy, setBusy] = useState(false);
 
     const renderPrivateKeyDetails = () => {
@@ -188,6 +204,52 @@ function BallotCountPageComponent() {
             setBusy(false);
         }
     }
+    
+    const startBallotCount = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        setBusy(true);
+
+        const { isConfirmed } = await Swal.fire({
+            title: 'Confirm Ballot Count',
+            text: 'Are you sure you want to start counting ballots? You must keep this tab focused until the process is complete.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, start!',
+            cancelButtonText: 'No, cancel',
+        })
+        if (isConfirmed) {
+            try {
+                // Fetch all the ballots
+                const res = await client.query({
+                    query: ENCRYPTED_BALLOTS_QUERY,
+                    fetchPolicy: 'no-cache'
+                });
+                if (res.error) {
+                    throw res.error;
+                }
+
+                const encryptedBallots = res.data.encryptedBallots;
+
+                
+                // ...
+
+                // Let user know that it is done
+                Swal.fire({
+                    title: "Counting Completed!",
+                    text: "The ballots have been counted! You will be redirected to the results page.",
+                    icon: "success"
+                });
+            } catch (e) {
+                Swal.fire({
+                    title: "Error",
+                    text: "Something went wrong while counting ballots. You may safely try again.",
+                    icon: "error"
+                });
+                console.error(e)
+            }
+        }
+
+        setBusy(false);
+    }
 
     useEffect(() => {
         if (data?.config.publicKey) {
@@ -265,7 +327,7 @@ function BallotCountPageComponent() {
 
     return (
         <>
-            <Typography variant="h1" className="mb-8">Ballot Count</Typography>
+            <Typography variant="h1">Ballot Count</Typography>
 
             <Card className="w-full lg:w-2/3 shadow-lg">
                 <CardBody className="p-6">
@@ -325,13 +387,25 @@ function BallotCountPageComponent() {
                     </div>
                 </CardBody>
             </Card>
+
+            <Card className="w-full lg:w-2/3 shadow-lg">
+                <CardBody className="p-6">
+                    <Typography variant="h4" color="blue-gray" className="mb-4">
+                        Count Ballots
+                    </Typography>
+                    
+                    <Button variant="outlined" color="green" disabled={busy || !privateKeyValid} onClick={startBallotCount}>
+                        {countingBallots ? "Counting Ballots..." : "Start Ballot Count"}
+                    </Button>
+                </CardBody>
+            </Card>
         </>
     )
 }
 
 export default function BallotCountPage() {
     return (
-        <Layout name="Ballot Count" adminProtected className="flex flex-col p-8 items-center">
+        <Layout name="Ballot Count" adminProtected className="flex flex-col p-8 items-center gap-8">
             <BallotCountPageComponent />
         </Layout>
     )
