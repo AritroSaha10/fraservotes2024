@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import * as openpgp from 'openpgp';
 import isListOfGivenType from "@/util/isListOfGivenType";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useRouter } from "next/router";
 
 const MAIN_DATA_QUERY = gql`
   query MainData {
@@ -69,6 +70,7 @@ enum BallotCountStatus {
 function BallotCountPageComponent() {
     const { loading, error, data } = useQuery<MainData>(MAIN_DATA_QUERY, { pollInterval: 5000 });
     const client = useApolloClient();
+    const router = useRouter();
 
     const [publicKey, setPublicKey] = useState<openpgp.Key | null>();
     const [encryptedPrivateKey, setEncryptedPrivateKey] = useState<openpgp.PrivateKey | null>();
@@ -349,12 +351,16 @@ function BallotCountPageComponent() {
                     throw "Could not submit decrypted ballots to backend"
                 }
 
+                const resultId = submitDecryptedBallotsMutation.data.saveDecryptedBallots;
+
                 // Let user know that it is done
-                Swal.fire({
+                await Swal.fire({
                     title: "Counting Completed!",
                     text: "The ballots have been counted! You will be redirected to the results page.",
                     icon: "success"
                 });
+
+                router.push(`/admin/results/${resultId}`);
             } catch (e) {
                 Swal.fire({
                     title: "Error",
@@ -435,7 +441,7 @@ function BallotCountPageComponent() {
             return (
                 <>
                     <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">Click to upload</span> or drag and drop <span className="text-red-500">*</span>
+                        <span className="font-semibold">Click to upload</span> <span className="text-red-500">*</span>
                     </p>
                     <p className="text-xs text-gray-500">.ASC</p>
                 </>

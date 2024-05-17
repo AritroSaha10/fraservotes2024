@@ -228,6 +228,7 @@ function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumber
                     name="volunteerKey"
                     id="volunteerKey"
                     placeholder="Volunteer key"
+                    type="password"
                     required
                     value={volunteerKeyInput}
                     onChange={e => { setVolunteerKeyInput(e.target.value) }}
@@ -257,7 +258,7 @@ function CheckInSection({ volunteerKeyInput, setVolunteerKeyInput, studentNumber
             </div>
 
             <Button color="blue" onClick={onSubmit} disabled={checkInLoading}>
-                Check-In
+                Open Ballot
             </Button>
         </>
     )
