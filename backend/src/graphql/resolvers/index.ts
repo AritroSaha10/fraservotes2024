@@ -2,6 +2,7 @@ import { MyContext } from "../../index.js";
 import { getCandidateResolver, getCandidatesResolver } from "./candidate.js";
 import { getConfigResolver, updateConfig } from "./config.js";
 import { getPositionResolver, getPositionsResolver } from "./positions.js";
+import { deleteAllResultsResolver, getAllResultsResolver, getResultResolver } from "./results.js";
 import { getUserResolver, getUsersResolver } from "./user.js";
 import { addDecryptedBallot, deleteBallots, getDecryptedBallotCount, getDecryptedBallots, getEncryptedBallotCount, getEncryptedBallots, saveDecryptedBallots, submitBallot } from "./voting.js";
 import { clearVotingStatusesResolver, getCompletedVotingStatusesCountResolver, getVotingStatusResolver, getVotingStatusesCountResolver, getVotingStatusesResolver } from "./votingStatus.js";
@@ -25,6 +26,8 @@ const resolvers = {
         votingStatusesCount: getVotingStatusesCountResolver,
         completedVotingStatusesCount: getCompletedVotingStatusesCountResolver,
         config: getConfigResolver,
+        allResults: getAllResultsResolver,
+        result: getResultResolver,
     },
     Mutation: {
         submitBallot,
@@ -33,6 +36,7 @@ const resolvers = {
         resetVotingStatuses: clearVotingStatusesResolver,
         updateConfig,
         saveDecryptedBallots,
+        deleteAllResults: deleteAllResultsResolver
     },
     Candidate: {
         position(parent, _, contextValue: MyContext) {
@@ -48,6 +52,16 @@ const resolvers = {
                 contextValue.dataSources.candidates.getCandidate(candidateId.toString())
             ));
         }
+    },
+    ResultPosition: {
+        position(parent, _, contextValue: MyContext) {
+            return contextValue.dataSources.positions.getPosition(parent.position.toString())
+        },
+    },
+    ResultCandidate: {
+        candidate(parent, _, contextValue: MyContext) {
+            return contextValue.dataSources.candidates.getCandidate(parent.candidate.toString())
+        },
     }
 };
 

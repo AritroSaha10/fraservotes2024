@@ -32,7 +32,9 @@ import checkIfVolunteer from './util/checkIfVolunteer.js';
 import VotingStatuses from './graphql/datasources/votingStatuses.js';
 import VotingStatus from './models/votingStatus.js';
 import ConfigDataSource from './graphql/datasources/config.js';
+import ResultsDataSource from './graphql/datasources/results.js'
 import Config from './models/config.js';
+import Results from './models/results.js';
 
 export interface MyContext {
     authTokenDecoded: DecodedIdToken,
@@ -45,6 +47,7 @@ export interface MyContext {
         decryptedBallots: DecryptedBallots,
         votingStatuses: VotingStatuses,
         config: ConfigDataSource,
+        results: ResultsDataSource
     }
 }
 
@@ -141,6 +144,7 @@ app.use(
                     decryptedBallots: new DecryptedBallots({ modelOrCollection: DecryptedBallot }),
                     votingStatuses: new VotingStatuses({ modelOrCollection: VotingStatus }),
                     config: new ConfigDataSource({ modelOrCollection: Config }),
+                    results: new ResultsDataSource({ modelOrCollection: Results })
                 }
             };
         }

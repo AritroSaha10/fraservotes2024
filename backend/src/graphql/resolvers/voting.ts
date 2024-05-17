@@ -5,10 +5,10 @@ import validateTokenForSensitiveRoutes from "../../util/validateTokenForSensitiv
 import { validateIfAdmin } from "../../util/checkIfAdmin.js";
 import { SelectedOption } from "../../models/decryptedBallot";
 import { isPGPEncrypted } from "../../util/isPGPEncrypted.js";
-import { ObjectId } from "mongodb";
 import { PositionDocument } from "../../models/position";
 import { CandidateDocument } from "../../models/candidate";
 import { Types } from "mongoose";
+import Results, { ResultsDocument } from "../../models/results.js";
 
 const getEncryptedBallots = async (_, __, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
@@ -244,18 +244,27 @@ const saveDecryptedBallots = async (
 
     console.log("Results:", aggregatedData)
 
-    // TODO: Convert this into a mongoose model and then save in mongoose and then done!!!!!
+    // Convert to Results schema and then save
+    const convertedPositionsData = Object.keys(aggregatedData).map(positionId => {
+        const candidates = Object.keys(aggregatedData[positionId]).map(candidateId => ({
+            candidate: new Types.ObjectId(candidateId),
+            votes: aggregatedData[positionId][candidateId]
+        }));
 
-    return null;
+        return {
+            position: new Types.ObjectId(positionId),
+            candidates
+        };
+    });
+
+    const results: ResultsDocument = new Results({
+        positions: convertedPositionsData,
+        timestamp: Math.floor(Date.now() / 1000)
+    });
+    await results.save();
+
+    return results.id;
 };
-
-
-// const saveDecryptedBallots = async (
-//     _,
-//     args: {
-
-//     }
-// )
 
 const deleteBallots = async (_, __, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized

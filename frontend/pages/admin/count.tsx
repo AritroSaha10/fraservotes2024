@@ -30,9 +30,7 @@ query EncryptedBallots {
 
 const SUBMIT_DECRYPTED_BALLOTS_MUTATION = gql`
 mutation SaveDecryptedBallots($decryptedBallots: [DecryptedBallotInput]!) {
-  saveDecryptedBallots(newDecryptedBallots: $decryptedBallots) {
-    void
-  }
+  saveDecryptedBallots(newDecryptedBallots: $decryptedBallots)
 }
 `
 

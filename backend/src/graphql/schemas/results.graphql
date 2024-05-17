@@ -1,0 +1,24 @@
+extend type Query {
+  allResults: [Result!]!
+  result(id: ID!): Result
+}
+
+extend type Mutation {
+  deleteAllResults: Void
+}
+
+type Result {
+  _id: ID!
+  timestamp: Int!
+  positions: [ResultPosition!]!
+}
+
+type ResultPosition {
+  position: Position!
+  candidates: [ResultCandidate!]!
+}
+
+type ResultCandidate {
+  candidate: Candidate!
+  votes: Int!
+}
