@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { Chart } from "react-google-charts";
 import { Typography } from "@material-tailwind/react";
 import Layout from "@/components/Layout";
+import Swal from "sweetalert2";
 
 const RESULT_QUERY = gql`
   query Result($id: ID!) {
@@ -71,7 +72,7 @@ function ResultsComponent() {
                 Calculated at {new Date(result.timestamp * 1000).toLocaleString()}
             </Typography>
 
-            {result.positions.map((positionResult) => (
+            {result.positions.map((positionResult: any) => (
                 <div key={positionResult.position.name} className="w-[90vw] lg:w-[70vw] mb-8">
                     <Typography variant="h2" className="mb-2 text-center lg:text-left">
                         {positionResult.position.name}
@@ -81,7 +82,7 @@ function ResultsComponent() {
                         chartType="PieChart"
                         data={[
                             ["Candidate", "Votes"],
-                            ...positionResult.candidates.map((candidateResult) => [
+                            ...positionResult.candidates.map((candidateResult: any) => [
                                 candidateResult.candidate.fullName,
                                 candidateResult.votes,
                             ]),

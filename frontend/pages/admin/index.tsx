@@ -11,6 +11,7 @@ import {
     type MRT_ColumnDef,
 } from 'material-react-table';
 import { CheckIcon } from "@heroicons/react/16/solid";
+import Swal from "sweetalert2";
 
 const mainDataQueryOp = gql`
 query MainData {
