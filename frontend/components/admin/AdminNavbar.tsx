@@ -8,6 +8,7 @@ import {
     ArchiveBoxArrowDownIcon,
     ArrowRightEndOnRectangleIcon,
     Bars2Icon,
+    ChartPieIcon,
     ChevronDownIcon,
     Cog6ToothIcon,
     EyeIcon,
@@ -123,6 +124,11 @@ const navListItems = [
         label: "Ballot Count",
         icon: ArchiveBoxArrowDownIcon,
         link: "/admin/count"
+    },
+    {
+        label: "Results",
+        icon: ChartPieIcon,
+        link: "/admin/results"
     },
     {
         label: "Settings",

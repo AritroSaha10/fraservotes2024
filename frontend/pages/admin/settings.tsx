@@ -32,6 +32,9 @@ const RESET_VOTING_MUTATION = gql`
     resetVotingStatuses {
       void
     }
+    deleteAllResults {
+      void
+    }
   }
 `;
 
