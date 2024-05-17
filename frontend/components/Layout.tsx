@@ -62,7 +62,6 @@ export default function Layout({
   adminProtected,
 }: LayoutProps) {
   const { user, loaded } = useFirebaseAuth();
-  const router = useRouter();
   const isRouterLoading = useIsRouterLoading();
 
   const [authorizationStatus, setAuthorizedStatus] = useState<AUTH_STATUS>(
@@ -105,7 +104,7 @@ export default function Layout({
     } else {
       setAuthorizedStatus(AUTH_STATUS.LOADING);
     }
-  }, [user, loaded, isRouterLoading]);
+  }, [user, loaded, isRouterLoading, userProtected, adminProtected]);
 
   let navbar: JSX.Element | null = null;
   if (adminProtected) {

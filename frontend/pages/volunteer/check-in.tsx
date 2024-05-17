@@ -470,7 +470,7 @@ function VotingSection({ pageStatus, setPageStatus, studentNumber, setStudentNum
                     });
 
                     return (
-                        <div className="flex flex-col">
+                        <div className="flex flex-col" key={positionId}>
                             <Typography variant="h2" className="mb-2">
                                 {position.name} (Select {position.spotsAvailable})
                             </Typography>

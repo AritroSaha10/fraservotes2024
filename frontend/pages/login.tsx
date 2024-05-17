@@ -31,8 +31,8 @@ export default function Login() {
 
     const authProvider = new GoogleAuthProvider();
     authProvider.setCustomParameters({
-        // login_hint: "000000@pdsb.net",
-        // hd: "pdsb.net", // Only allows users part of pdsb.net organization
+        login_hint: "000000@pdsb.net",
+        hd: "pdsb.net", // Only allows users part of pdsb.net organization
         prompt: 'consent',
     });
 
@@ -75,7 +75,7 @@ export default function Login() {
             alert("You are already signed in. Redirecting...");
             user.getIdTokenResult().then(({ claims }) => redirectBasedOnRoles(claims));
         }
-    }, [user, loaded]);
+    }, [user, loaded, loggingIn]);
 
     return (
         <Layout

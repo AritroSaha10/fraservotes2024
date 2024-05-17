@@ -19,7 +19,7 @@ export default function VolunteerGenerateKey() {
                 generateVolunteerKey().then(() => router.push("/volunteer/check-in"));
             }
         }
-    }, [user, loaded]);
+    }, [user, loaded, router]);
 
     return (
         <Layout name="Generate New Key" userProtected className="flex flex-col w-full h-full items-center justify-center">
