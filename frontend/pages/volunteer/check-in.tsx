@@ -400,20 +400,16 @@ function VotingSection({ pageStatus, setPageStatus, studentNumber, setStudentNum
             }
 
             // Prepare raw data into what will be encrypted and sent to server
-            const ballot = {
-                timestampUTC: Math.floor(Date.now() / 1000),
-                selectedOptions: Object.keys(selectedCandidates).map(positionId => ({
-                    position: positionId,
-                    candidates: selectedCandidates[positionId].map(candidate => candidate._id)
-                }))
-            }
+            const selectedChoices = Object.keys(selectedCandidates).map(positionId => ({
+                position: positionId,
+                candidates: selectedCandidates[positionId].map(candidate => candidate._id)
+            }))
 
-            
             // Encrypt using PGP
             console.log(configData.config.publicKey)
             const publicKey = await readKey({ armoredKey: configData.config.publicKey });
             const encryptedBallot = String(await encrypt({
-                message: await createMessage({ text: JSON.stringify(ballot) }),
+                message: await createMessage({ text: JSON.stringify(selectedChoices) }),
                 encryptionKeys: publicKey,
             }));
             console.log(encryptedBallot)

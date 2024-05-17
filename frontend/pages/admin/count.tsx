@@ -5,6 +5,8 @@ import { Button, Card, CardBody, CardHeader, Input, Tooltip, Typography } from "
 import { ChangeEvent, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import * as openpgp from 'openpgp';
+import isListOfGivenType from "@/util/isListOfGivenType";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const MAIN_DATA_QUERY = gql`
   query MainData {
@@ -37,7 +39,25 @@ interface MainData {
 }
 
 interface EncryptedBallot {
-    
+    _id: string;
+    encryptedBallot: string;
+    timestampUTC: number;
+}
+
+interface SelectedChoice {
+    position: string; // ID to position
+    candidates: string[]; // IDs to candidates
+}
+
+interface DecryptedBallot {
+    encryptedBallotId: string;
+    selectedChoices: SelectedChoice[];
+}
+
+enum BallotCountStatus {
+    IDLE,
+    DECRYPTING,
+    SAVING,
 }
 
 function BallotCountPageComponent() {
@@ -56,7 +76,7 @@ function BallotCountPageComponent() {
     const [privateKeyValid, setPrivateKeyValid] = useState(false);
 
     const [passphrase, setPassphrase] = useState<string>("");
-    const [countingBallots, setCountingBallots] = useState(false);
+    const [ballotCountStatus, setBallotCountStatus] = useState<BallotCountStatus>(BallotCountStatus.IDLE);
     const [busy, setBusy] = useState(false);
 
     const renderPrivateKeyDetails = () => {
@@ -206,7 +226,18 @@ function BallotCountPageComponent() {
     }
     
     const startBallotCount = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.preventDefault();
         setBusy(true);
+
+        if (!privateKeyValid) {
+            Swal.fire({
+                title: "Error",
+                text: "The private key has not been verified yet. Please do so and try again.",
+                icon: "error"
+            })
+            setBusy(false);
+            return;
+        }
 
         const { isConfirmed } = await Swal.fire({
             title: 'Confirm Ballot Count',
@@ -218,6 +249,8 @@ function BallotCountPageComponent() {
         })
         if (isConfirmed) {
             try {
+                setBallotCountStatus(BallotCountStatus.DECRYPTING);
+
                 // Fetch all the ballots
                 const res = await client.query({
                     query: ENCRYPTED_BALLOTS_QUERY,
@@ -227,10 +260,77 @@ function BallotCountPageComponent() {
                     throw res.error;
                 }
 
-                const encryptedBallots = res.data.encryptedBallots;
+                // Decrypt all the ballots
+                const encryptedBallots = res.data.encryptedBallots! as EncryptedBallot[];
+                const decryptedBallots = await Promise.all(encryptedBallots.map(async encryptedBallot => {
+                    const ballotPGPMsg = await openpgp.readMessage({
+                        armoredMessage: encryptedBallot.encryptedBallot
+                    });
+        
+                    // Try decrypting back
+                    const { data: decryptedChoicesRaw } = await openpgp.decrypt({
+                        message: ballotPGPMsg,
+                        decryptionKeys: decryptedPrivateKey!
+                    });
 
+                    let decryptedChoices: SelectedChoice[] | null = null;
+                    try {
+                        decryptedChoices = JSON.parse(decryptedChoicesRaw.toString());
+                        if (!Array.isArray(decryptedChoices)) throw "Decrypted choices is corrupt, not an array"
+
+                        // Check if all of the individual choice objects are valid
+                        const allChoicesValid = decryptedChoices.every(choice => {
+                            const positionInData = "position" in choice && typeof choice.position === "string";
+                            const candidatesInData = "candidates" in choice && isListOfGivenType(choice.candidates, "string");
+
+                            return positionInData && candidatesInData;
+                        })
+                        
+                        if (!allChoicesValid) throw "Decrypted choices is corrupt / does not have sufficient fields"
+                    } catch (e) {
+                        console.error({
+                            message: "Error while decrypting selected choices",
+                            error: e,
+                            rawChoices: decryptedChoicesRaw,
+                            choices: decryptedChoices,
+                            encryptedBallotId: encryptedBallot._id
+                        });
+
+                        return null;
+                    }
+
+                    const decryptedBallot: DecryptedBallot = {
+                        encryptedBallotId: encryptedBallot._id,
+                        selectedChoices: decryptedChoices
+                    }
+
+                    return decryptedBallot;
+                }));
                 
-                // ...
+                // Take action if any ballots are corrupt
+                const corruptBallots = decryptedBallots.filter(ballot => ballot === null).length;
+                if (corruptBallots > 0) {
+                    const { isConfirmed } = await Swal.fire({
+                        title: 'Corrupt ballots found',
+                        text: `${corruptBallots} / ${decryptedBallots.length} were found to be corrupt / could not be decrypted. Would you like to continue with calculating the results?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, continue!',
+                        cancelButtonText: 'No, stop',
+                    });
+
+                    if (!isConfirmed) {
+                        setBusy(false);
+                        setBallotCountStatus(BallotCountStatus.IDLE);
+                        return;
+                    }
+                }
+
+                const normalDecryptedBallots = decryptedBallots.filter(ballot => ballot !== null);
+                console.log(normalDecryptedBallots);
+
+                // TODO: Send all of the ballots to the backend for counting
+                setBallotCountStatus(BallotCountStatus.SAVING);
 
                 // Let user know that it is done
                 Swal.fire({
@@ -249,6 +349,7 @@ function BallotCountPageComponent() {
         }
 
         setBusy(false);
+        setBallotCountStatus(BallotCountStatus.IDLE);
     }
 
     useEffect(() => {
@@ -325,6 +426,14 @@ function BallotCountPageComponent() {
         }
     };
 
+    const countingStatusDisplay = (() => {
+        switch (ballotCountStatus) {
+            case BallotCountStatus.IDLE: return <div className="flex gap-1 items-center">Start Ballot Count</div>
+            case BallotCountStatus.DECRYPTING: return <div className="flex gap-1 items-center"><LoadingSpinner /> Decrypting ballots...</div>
+            case BallotCountStatus.SAVING: return <div className="flex gap-1 items-center"><LoadingSpinner /> Counting and saving ballots...</div>
+        } 
+    })();
+
     return (
         <>
             <Typography variant="h1">Ballot Count</Typography>
@@ -395,7 +504,7 @@ function BallotCountPageComponent() {
                     </Typography>
                     
                     <Button variant="outlined" color="green" disabled={busy || !privateKeyValid} onClick={startBallotCount}>
-                        {countingBallots ? "Counting Ballots..." : "Start Ballot Count"}
+                        {countingStatusDisplay}
                     </Button>
                 </CardBody>
             </Card>
