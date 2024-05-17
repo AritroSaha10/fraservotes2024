@@ -7,7 +7,7 @@ export interface SelectedOption {
 }
 
 export interface DecryptedBallotDocument extends Document {
-    timestampUTC: number;
+    encryptedBallotId: ObjectId;
     selectedOptions: SelectedOption[];
 }
 
@@ -18,7 +18,7 @@ const selectedOptionSchema = new Schema<SelectedOption>({
 }, { _id : false })
 
 const decryptedBallotSchema = new Schema<DecryptedBallotDocument>({
-    timestampUTC: { type: Number, required: true },
+    encryptedBallotId: { type: Schema.ObjectId, ref: "Encrypted Ballot", required: true },
     selectedOptions: {type: [selectedOptionSchema], required: true },
 });
 

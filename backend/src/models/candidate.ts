@@ -1,7 +1,7 @@
 import { Document, Schema, model, ObjectId } from 'mongoose';
 
 // Candidate interface
-interface CandidateDocument extends Document {
+export interface CandidateDocument extends Document {
     fullName: string
     position: ObjectId
     biography: string

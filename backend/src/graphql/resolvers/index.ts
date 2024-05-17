@@ -3,7 +3,7 @@ import { getCandidateResolver, getCandidatesResolver } from "./candidate.js";
 import { getConfigResolver, updateConfig } from "./config.js";
 import { getPositionResolver, getPositionsResolver } from "./positions.js";
 import { getUserResolver, getUsersResolver } from "./user.js";
-import { addDecryptedBallot, deleteBallots, getDecryptedBallotCount, getDecryptedBallots, getEncryptedBallotCount, getEncryptedBallots, submitBallot } from "./voting.js";
+import { addDecryptedBallot, deleteBallots, getDecryptedBallotCount, getDecryptedBallots, getEncryptedBallotCount, getEncryptedBallots, saveDecryptedBallots, submitBallot } from "./voting.js";
 import { clearVotingStatusesResolver, getCompletedVotingStatusesCountResolver, getVotingStatusResolver, getVotingStatusesCountResolver, getVotingStatusesResolver } from "./votingStatus.js";
 
 // Resolvers define how to fetch the types defined in your schema.
@@ -32,6 +32,7 @@ const resolvers = {
         deleteBallots,
         resetVotingStatuses: clearVotingStatusesResolver,
         updateConfig,
+        saveDecryptedBallots,
     },
     Candidate: {
         position(parent, _, contextValue: MyContext) {

@@ -7,7 +7,8 @@ extend type Query {
 
 extend type Mutation {
   submitBallot(studentNumber: Int!, encryptedBallot: String!): Void
-  addDecryptedBallot(timestampUTC: Int!, selectedChoices: [SelectedBallotOptionInput]!): Void
+  addDecryptedBallot(encryptedBallotId: ID!, selectedChoices: [SelectedBallotOptionInput]!): Void
+  saveDecryptedBallots(newDecryptedBallots: [DecryptedBallotInput]!): Void
   deleteBallots: Void
 }
 
@@ -31,4 +32,9 @@ input SelectedBallotOptionInput {
 type SelectedBallotOption {
   position: Position!
   candidates: [Candidate!]!
+}
+
+input DecryptedBallotInput {
+  encryptedBallotId: ID!
+  selectedChoices: [SelectedBallotOptionInput!]!
 }

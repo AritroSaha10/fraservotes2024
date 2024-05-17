@@ -28,6 +28,14 @@ query EncryptedBallots {
 }
 `
 
+const SUBMIT_DECRYPTED_BALLOTS_MUTATION = gql`
+mutation SaveDecryptedBallots($decryptedBallots: [DecryptedBallotInput]!) {
+  saveDecryptedBallots(newDecryptedBallots: $decryptedBallots) {
+    void
+  }
+}
+`
+
 interface Config {
     isOpen: boolean;
     publicKey: string;
@@ -326,11 +334,22 @@ function BallotCountPageComponent() {
                     }
                 }
 
-                const normalDecryptedBallots = decryptedBallots.filter(ballot => ballot !== null);
+                const normalDecryptedBallots = decryptedBallots.filter(ballot => ballot !== null) as DecryptedBallot[];
                 console.log(normalDecryptedBallots);
 
-                // TODO: Send all of the ballots to the backend for counting
+                // Send all of the ballots to the backend for counting
                 setBallotCountStatus(BallotCountStatus.SAVING);
+                const submitDecryptedBallotsMutation = await client.mutate({
+                    mutation: SUBMIT_DECRYPTED_BALLOTS_MUTATION,
+                    variables: {
+                        decryptedBallots: normalDecryptedBallots
+                    }
+                })
+
+                if (submitDecryptedBallotsMutation.errors?.length !== undefined && submitDecryptedBallotsMutation.errors?.length > 0) {
+                    submitDecryptedBallotsMutation.errors.forEach(console.error);
+                    throw "Could not submit decrypted ballots to backend"
+                }
 
                 // Let user know that it is done
                 Swal.fire({

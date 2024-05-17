@@ -5,6 +5,10 @@ import validateTokenForSensitiveRoutes from "../../util/validateTokenForSensitiv
 import { validateIfAdmin } from "../../util/checkIfAdmin.js";
 import { SelectedOption } from "../../models/decryptedBallot";
 import { isPGPEncrypted } from "../../util/isPGPEncrypted.js";
+import { ObjectId } from "mongodb";
+import { PositionDocument } from "../../models/position";
+import { CandidateDocument } from "../../models/candidate";
+import { Types } from "mongoose";
 
 const getEncryptedBallots = async (_, __, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
@@ -115,7 +119,7 @@ const submitBallot = async (
 const addDecryptedBallot = async (
     _,
     args: {
-        timestampUTC: number;
+        encryptedBallotId: string;
         selectedChoices: SelectedOption[];
     },
     contextValue: MyContext
@@ -138,12 +142,120 @@ const addDecryptedBallot = async (
 
     // Add ballot
     await contextValue.dataSources.decryptedBallots.addDecryptedBallot(
-        args.timestampUTC,
+        new Types.ObjectId(args.encryptedBallotId),
         args.selectedChoices
     );
 
     return null;
 };
+
+const saveDecryptedBallots = async (
+    _,
+    args: {
+        newDecryptedBallots: {
+            encryptedBallotId: string;
+            selectedChoices: SelectedOption[];
+        }[]
+    },
+    contextValue: MyContext
+) => {
+    // Sensitive action, need to verify whether they are authorized
+    const auth = getAuth();
+    await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
+    validateIfAdmin(contextValue.authTokenDecoded);
+
+    // Confirm voting is closed
+    const { isOpen: votingIsOpen } = await contextValue.dataSources.config.get()
+    if (votingIsOpen) {
+        throw new GraphQLError("Voting is open, must be closed before decryption", {
+            extensions: {
+                code: "FORBIDDEN",
+                http: { status: 403 },
+            },
+        });
+    }
+
+    // Save all of the decrypted ballots to DB
+    const decryptedBallotsInfo = await Promise.all(args.newDecryptedBallots.map(async ballot => {
+        try {
+            // Check whether encrypted ballot ID actually exists
+            const encryptedBallotId = new Types.ObjectId(ballot.encryptedBallotId);
+            const encryptedBallot = await contextValue.dataSources.encryptedBallots.findOneById(ballot.encryptedBallotId);
+            if (encryptedBallot === null) {
+                throw "Encrypted ballot ID does not exist";
+            }
+
+            // Add a new ballot, or update one that may already reference an encrypted ballot
+            const res = await contextValue.dataSources.decryptedBallots.addOrUpdateDecryptedBallot(encryptedBallotId, ballot.selectedChoices);
+            return {
+                decryptedId: String(res.id),
+                ballot
+            };
+        } catch (e) {
+            console.error("Error while decrypting ballot:", e, "Ballot:", ballot)
+            return null;
+        }
+    }));
+
+    const failedSavesCount = decryptedBallotsInfo.filter(info => info === null).length;
+    console.log(`${failedSavesCount}/${decryptedBallotsInfo.length} failed saving, counting all that were saved`);
+
+    // Aggregate all of the data by position and candidate
+    const positions = await contextValue.dataSources.positions.getPositions() as PositionDocument[];
+    const candidates = await contextValue.dataSources.candidates.getCandidates() as CandidateDocument[];
+
+    // Basically need to make an object where the key is the position ID, and the value is another object
+    // That object has the candidate ID as a key and the count as the value
+    // No keys are allowed to be added later on to prevent malicious actor from messing with backend and voting for
+    // a person who isn't even running for a certain position
+    let aggregatedData = positions.reduce((acc, position) => {
+        acc[position.id] = candidates.reduce((acc, candidate) => {
+            if (candidate.position.toString() === position._id.toString()) acc[candidate.id] = 0;
+            return acc;
+        }, {});
+        return acc;
+    }, {});
+
+    // Now actually aggregate everything
+    const successfulDecryptedBallots = decryptedBallotsInfo.filter(info => info !== null);
+    successfulDecryptedBallots.forEach(info => {
+        info.ballot.selectedChoices.forEach(choice => {
+            // Confirm if position and candidate IDs are valid
+            const positionId = choice.position.toString();
+            if (!(positionId in aggregatedData)) {
+                console.error("Given position is unknown / does not exist", positionId);
+                return;
+            }
+
+            choice.
+                candidates.
+                // Just take the first few that fall under the spots available, nothing else matters
+                slice(0, positions.filter(pos => pos.id === positionId)[0].spotsAvailable).
+                forEach(candidateId => {
+                    console.log(positionId, candidateId)
+                    if (!(candidateId.toString() in aggregatedData[positionId])) {
+                        console.error("Given candidate cannot be found for given position", positionId, candidateId.toString());
+                    } else {
+                        aggregatedData[positionId][candidateId.toString()]++;
+                    }
+            })
+        });
+    });
+
+    console.log("Results:", aggregatedData)
+
+    // TODO: Convert this into a mongoose model and then save in mongoose and then done!!!!!
+
+    return null;
+};
+
+
+// const saveDecryptedBallots = async (
+//     _,
+//     args: {
+
+//     }
+// )
 
 const deleteBallots = async (_, __, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
@@ -190,5 +302,6 @@ export {
     getDecryptedBallotCount,
     submitBallot,
     addDecryptedBallot,
+    saveDecryptedBallots,
     deleteBallots,
 };
