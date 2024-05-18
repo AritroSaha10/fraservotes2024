@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { ArrowUpTrayIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Button, Card, CardBody, Input, Tooltip, Typography } from "@material-tailwind/react";
-import * as openpgp from "openpgp";
+import { Key, PrivateKey, readPrivateKey, decryptKey, readMessage, encrypt, createMessage, decrypt, readKey } from "openpgp";
 import Swal from "sweetalert2";
 
 import isListOfGivenType from "@/util/isListOfGivenType";
@@ -76,9 +76,9 @@ function BallotCountPageComponent() {
     const client = useApolloClient();
     const router = useRouter();
 
-    const [publicKey, setPublicKey] = useState<openpgp.Key | null>();
-    const [encryptedPrivateKey, setEncryptedPrivateKey] = useState<openpgp.PrivateKey | null>();
-    const [decryptedPrivateKey, setDecryptedPrivateKey] = useState<openpgp.PrivateKey | null>();
+    const [publicKey, setPublicKey] = useState<Key | null>();
+    const [encryptedPrivateKey, setEncryptedPrivateKey] = useState<PrivateKey | null>();
+    const [decryptedPrivateKey, setDecryptedPrivateKey] = useState<PrivateKey | null>();
     const [privateKeyDetails, setPrivateKeyDetails] = useState<{
         keyID: string;
         creationDate: string;
@@ -156,7 +156,7 @@ function BallotCountPageComponent() {
         reader.onload = async (loadEvent) => {
             const privateKeyRaw = loadEvent.target?.result as string;
             try {
-                const privateKey = await openpgp.readPrivateKey({ armoredKey: privateKeyRaw });
+                const privateKey = await readPrivateKey({ armoredKey: privateKeyRaw });
                 setEncryptedPrivateKey(privateKey);
                 setPrivateKeyDetails({
                     keyID: privateKey.getKeyID().toHex(),
@@ -201,9 +201,9 @@ function BallotCountPageComponent() {
         setBusy(true);
 
         // First, try decrypting the key
-        let decryptedPrivateKeyTmp: openpgp.PrivateKey | null = null;
+        let decryptedPrivateKeyTmp: PrivateKey | null = null;
         try {
-            decryptedPrivateKeyTmp = await openpgp.decryptKey({
+            decryptedPrivateKeyTmp = await decryptKey({
                 privateKey: encryptedPrivateKey,
                 passphrase,
             });
@@ -224,15 +224,15 @@ function BallotCountPageComponent() {
         try {
             // Try encrypting string with public key to confirm if public & private key match
             const testMessage = "i love the university of waterloo";
-            const testEncryptedMessage = await openpgp.readMessage({
-                armoredMessage: await openpgp.encrypt({
-                    message: await openpgp.createMessage({ text: testMessage }),
+            const testEncryptedMessage = await readMessage({
+                armoredMessage: await encrypt({
+                    message: await createMessage({ text: testMessage }),
                     encryptionKeys: publicKey!,
                 }),
             });
 
             // Try decrypting back
-            const { data: testDecryptedMessage } = await openpgp.decrypt({
+            const { data: testDecryptedMessage } = await decrypt({
                 message: testEncryptedMessage,
                 decryptionKeys: decryptedPrivateKeyTmp,
             });
@@ -306,12 +306,12 @@ function BallotCountPageComponent() {
                 const encryptedBallots = res.data.encryptedBallots! as EncryptedBallot[];
                 const decryptedBallots = await Promise.all(
                     encryptedBallots.map(async (encryptedBallot) => {
-                        const ballotPGPMsg = await openpgp.readMessage({
+                        const ballotPGPMsg = await readMessage({
                             armoredMessage: encryptedBallot.encryptedBallot,
                         });
 
                         // Try decrypting back
-                        const { data: decryptedChoicesRaw } = await openpgp.decrypt({
+                        const { data: decryptedChoicesRaw } = await decrypt({
                             message: ballotPGPMsg,
                             decryptionKeys: decryptedPrivateKey!,
                         });
@@ -422,7 +422,7 @@ function BallotCountPageComponent() {
         if (data?.config.publicKey) {
             (async () => {
                 try {
-                    const publicKeyObject = await openpgp.readKey({ armoredKey: data.config.publicKey });
+                    const publicKeyObject = await readKey({ armoredKey: data.config.publicKey });
                     setPublicKey(publicKeyObject);
                 } catch (err) {
                     Swal.fire({

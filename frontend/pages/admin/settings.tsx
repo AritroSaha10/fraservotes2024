@@ -2,7 +2,7 @@ import { useState, useEffect, ChangeEvent } from "react";
 
 import { gql, useQuery, useMutation } from "@apollo/client";
 import { Button, Typography, Card, CardBody, Input, Tooltip } from "@material-tailwind/react";
-import * as openpgp from "openpgp";
+import { readKey } from "openpgp";
 import Swal from "sweetalert2";
 
 import Layout from "@/components/Layout";
@@ -69,7 +69,7 @@ function AdminConfigPageComponent() {
         if (data?.config?.publicKey) {
             (async () => {
                 try {
-                    const publicKeyObject = await openpgp.readKey({ armoredKey: data.config.publicKey });
+                    const publicKeyObject = await readKey({ armoredKey: data.config.publicKey });
                     const details = {
                         keyID: publicKeyObject.getKeyIDs()[0].toHex(),
                         creationDate: publicKeyObject.getCreationTime().toLocaleString("en-US", {
@@ -147,7 +147,7 @@ function AdminConfigPageComponent() {
             reader.onload = async (e) => {
                 const publicKey = e.target?.result as string;
                 try {
-                    const publicKeyObject = await openpgp.readKey({ armoredKey: publicKey });
+                    const publicKeyObject = await readKey({ armoredKey: publicKey });
                     if (publicKeyObject) {
                         if (publicKeyObject.isPrivate()) {
                             Swal.fire({
