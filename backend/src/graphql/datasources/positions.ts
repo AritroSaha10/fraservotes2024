@@ -1,12 +1,7 @@
 import { MongoDataSource } from 'apollo-datasource-mongodb'
 import { ObjectId } from 'mongodb'
 import { GraphQLError } from 'graphql';
-
-export interface PositionDocument {
-    _id: ObjectId
-    name: string
-    spotsAvailable: number
-}
+import type { PositionDocument } from 'src/models/position';
 
 export default class Positions extends MongoDataSource<PositionDocument> {
     async getPosition(id: ObjectId | string) {
@@ -24,7 +19,6 @@ export default class Positions extends MongoDataSource<PositionDocument> {
     }
 
     getPositions() {
-        // @ts-ignore
         return this.model!.find().exec()
     }
 }

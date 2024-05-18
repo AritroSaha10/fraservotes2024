@@ -1,4 +1,5 @@
-import { Document, ObjectId, Schema, model } from 'mongoose';
+import { Document, Schema, model } from 'mongoose';
+import type { ObjectId } from 'mongoose';
 
 // Ballot interface
 export interface SelectedOption {

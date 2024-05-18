@@ -1,16 +1,17 @@
 import { GraphQLError } from "graphql";
-import { MyContext } from "../..";
+import type { MyContext } from "src";
 import { getAuth } from "firebase-admin/auth";
-import validateTokenForSensitiveRoutes from "../../util/validateTokenForSensitiveRoutes.js";
-import { validateIfAdmin } from "../../util/checkIfAdmin.js";
-import { SelectedOption } from "../../models/decryptedBallot";
-import { isPGPEncrypted } from "../../util/isPGPEncrypted.js";
-import { PositionDocument } from "../../models/position";
-import { CandidateDocument } from "../../models/candidate";
+import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
+import { validateIfAdmin } from "src/util/checkIfAdmin";
+import type { SelectedOption } from "src/models/decryptedBallot";
+import { isPGPEncrypted } from "src/util/isPGPEncrypted";
+import type { PositionDocument } from "src/models/position";
+import type { CandidateDocument } from "src/models/candidate";
 import { Types } from "mongoose";
-import Results, { ResultsDocument } from "../../models/results.js";
+import Results from "src/models/results";
+import type { ResultsDocument } from "src/models/results";
 
-const getEncryptedBallots = async (_, __, contextValue: MyContext) => {
+const getEncryptedBallots = async (_: any, __: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -19,7 +20,7 @@ const getEncryptedBallots = async (_, __, contextValue: MyContext) => {
     return contextValue.dataSources.encryptedBallots.getAll();
 };
 
-const getEncryptedBallotCount = async (_, __, contextValue: MyContext) => {
+const getEncryptedBallotCount = async (_: any, __: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -28,7 +29,7 @@ const getEncryptedBallotCount = async (_, __, contextValue: MyContext) => {
     return contextValue.dataSources.encryptedBallots.getCount();
 };
 
-const getDecryptedBallots = async (_, __, contextValue: MyContext) => {
+const getDecryptedBallots = async (_: any, __: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -37,7 +38,7 @@ const getDecryptedBallots = async (_, __, contextValue: MyContext) => {
     return contextValue.dataSources.decryptedBallots.getAll();
 };
 
-const getDecryptedBallotCount = async (_, __, contextValue: MyContext) => {
+const getDecryptedBallotCount = async (_: any, __: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -47,7 +48,7 @@ const getDecryptedBallotCount = async (_, __, contextValue: MyContext) => {
 };
 
 const submitBallot = async (
-    _,
+    _: any,
     args: {
         studentNumber: number;
         encryptedBallot: string;
@@ -117,7 +118,7 @@ const submitBallot = async (
 };
 
 const addDecryptedBallot = async (
-    _,
+    _: any,
     args: {
         encryptedBallotId: string;
         selectedChoices: SelectedOption[];
@@ -150,7 +151,7 @@ const addDecryptedBallot = async (
 };
 
 const saveDecryptedBallots = async (
-    _,
+    _: any,
     args: {
         newDecryptedBallots: {
             encryptedBallotId: string;
@@ -208,16 +209,22 @@ const saveDecryptedBallots = async (
     // That object has the candidate ID as a key and the count as the value
     // No keys are allowed to be added later on to prevent malicious actor from messing with backend and voting for
     // a person who isn't even running for a certain position
-    let aggregatedData = positions.reduce((acc, position) => {
+    const aggregatedData = positions.reduce((acc, position) => {
         acc[position.id] = candidates.reduce((acc, candidate) => {
             if (candidate.position.toString() === position._id.toString()) acc[candidate.id] = 0;
             return acc;
-        }, {});
+        }, {} as {[key: string]: any});
         return acc;
-    }, {});
+    }, {} as {[key: string]: any});
 
     // Now actually aggregate everything
-    const successfulDecryptedBallots = decryptedBallotsInfo.filter(info => info !== null);
+    const successfulDecryptedBallots = decryptedBallotsInfo.filter(info => info !== null) as {
+        decryptedId: string;
+        ballot: {
+            encryptedBallotId: string;
+            selectedChoices: SelectedOption[];
+        }
+    }[];
     successfulDecryptedBallots.forEach(info => {
         info.ballot.selectedChoices.forEach(choice => {
             // Confirm if position and candidate IDs are valid
@@ -266,7 +273,7 @@ const saveDecryptedBallots = async (
     return results.id;
 };
 
-const deleteBallots = async (_, __, contextValue: MyContext) => {
+const deleteBallots = async (_: any, __: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -275,7 +282,7 @@ const deleteBallots = async (_, __, contextValue: MyContext) => {
     // Double-check if user is actually admin, since this is quite destructive
     const uid = contextValue.authTokenDecoded.uid;
     const { customClaims } = await auth.getUser(uid);
-    if (!("admin" in customClaims && customClaims.admin === true)) {
+    if (!(customClaims !== undefined && "admin" in customClaims && customClaims.admin === true)) {
         throw new GraphQLError("Not sufficient permissions", {
             extensions: {
                 code: "FORBIDDEN",

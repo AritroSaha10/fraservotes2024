@@ -1,6 +1,6 @@
 import { MongoDataSource } from "apollo-datasource-mongodb";
 import { ObjectId } from "mongodb";
-import { VotingStatusDocument } from "../../models/votingStatus";
+import type { VotingStatusDocument } from "src/models/votingStatus";
 
 export default class VotingStatuses extends MongoDataSource<VotingStatusDocument> {
   updateVotingStatus(studentNumber: number, status: boolean) {

@@ -12,8 +12,8 @@ export interface User {
 export function convertUserRecordToUser(userRec: UserRecord): User {
     return {
         uid: userRec.uid,
-        displayName: userRec.displayName,
-        email: userRec.email,
+        displayName: userRec.displayName ?? "",
+        email: userRec.email ?? "",
         admin: userRec.customClaims instanceof Object && "admin" in userRec.customClaims && userRec.customClaims["admin"] === true,
         volunteer: userRec.customClaims instanceof Object && "volunteer" in userRec.customClaims && userRec.customClaims["volunteer"] === true
     }
@@ -28,7 +28,7 @@ export default class Users {
 
     private batchUsers = new DataLoader<string, UserRecord>(async (uids: readonly string[]) => {
         const rawResults = await this.fbAuth.getUsers(uids.map(uid => ({ uid })))
-        const mapping = rawResults.users.reduce((prev, curr) => ({ ...prev, [curr.uid]: curr }), {})
+        const mapping: { [key: string]: any } = rawResults.users.reduce((prev, curr) => ({ ...prev, [curr.uid]: curr }), {})
 
         return uids.map(uid => uid in mapping ? mapping[uid] : new Error(`No result for ${uid}`))
     });

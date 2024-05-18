@@ -5,36 +5,37 @@ import gql from "graphql-tag";
 import { ApolloServer } from '@apollo/server';
 import { buildSubgraphSchema } from '@apollo/subgraph';
 import { expressMiddleware } from '@apollo/server/express4';
-import resolvers from './graphql/resolvers/index.js';
+import resolvers from './graphql/resolvers/index';
 import { readFileSync, readdirSync } from "fs";
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { hello } from './routes/hello.js';
-import Positions from './graphql/datasources/positions.js';
+import { hello } from './routes/hello';
+import Positions from './graphql/datasources/positions';
 import mongoose from 'mongoose';
-import Position from './models/position.js';
+import Position from './models/position';
 
 import 'dotenv/config'
-import Candidates from './graphql/datasources/candidates.js';
-import Candidate from './models/candidate.js';
+import Candidates from './graphql/datasources/candidates';
+import Candidate from './models/candidate';
 
 import { initializeApp } from 'firebase-admin/app';
-import { getAuth, DecodedIdToken } from 'firebase-admin/auth';
+import { getAuth } from 'firebase-admin/auth';
+import type { DecodedIdToken } from 'firebase-admin/auth';
 import { GraphQLError } from 'graphql';
-import Users from './graphql/datasources/users.js';
-import EncryptedBallots from './graphql/datasources/encryptedBallots.js'
-import createServiceAccount from './util/createServiceAccount.js';
-import EncryptedBallot from './models/encryptedBallot.js';
-import DecryptedBallots from './graphql/datasources/decryptedBallots.js';
-import DecryptedBallot from './models/decryptedBallot.js';
-import checkIfAdmin from './util/checkIfAdmin.js';
-import checkIfVolunteer from './util/checkIfVolunteer.js';
-import VotingStatuses from './graphql/datasources/votingStatuses.js';
-import VotingStatus from './models/votingStatus.js';
-import ConfigDataSource from './graphql/datasources/config.js';
-import ResultsDataSource from './graphql/datasources/results.js'
-import Config from './models/config.js';
-import Results from './models/results.js';
+import Users from './graphql/datasources/users';
+import EncryptedBallots from './graphql/datasources/encryptedBallots'
+import createServiceAccount from './util/createServiceAccount';
+import EncryptedBallot from './models/encryptedBallot';
+import DecryptedBallots from './graphql/datasources/decryptedBallots';
+import DecryptedBallot from './models/decryptedBallot';
+import checkIfAdmin from './util/checkIfAdmin';
+import checkIfVolunteer from './util/checkIfVolunteer';
+import VotingStatuses from './graphql/datasources/votingStatuses';
+import VotingStatus from './models/votingStatus';
+import ConfigDataSource from './graphql/datasources/config';
+import ResultsDataSource from './graphql/datasources/results'
+import Config from './models/config';
+import Results from './models/results';
 
 export interface MyContext {
     authTokenDecoded: DecodedIdToken,
@@ -56,7 +57,7 @@ const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 5050;
 const app = express();
-mongoose.connect(process.env.MONGODB_CONNECTION_STR);
+mongoose.connect(process.env.MONGODB_CONNECTION_STR ?? "");
 
 initializeApp({
     credential: createServiceAccount()
@@ -81,7 +82,7 @@ const typeDefs = gql(rawTypeDefs);
 
 // Setup Apollo GraphQL server
 const server = new ApolloServer<MyContext>({
-    schema: buildSubgraphSchema({ typeDefs, resolvers }),
+    schema: buildSubgraphSchema([{ typeDefs, resolvers }]),
     status400ForVariableCoercionErrors: true,
     introspection: process.env.NODE_ENV !== 'production'
 });
@@ -91,10 +92,10 @@ app.use(
     cors(),
     express.json(),
     expressMiddleware(server, {
-        context: async ({ req, res }) => {
+        context: async ({ req }) => {
             const authToken = (req.headers.authorization || "").replace("Bearer ", "");
 
-            let decodedToken: DecodedIdToken = null;
+            let decodedToken: DecodedIdToken | null = null;
             try {
                 decodedToken = await auth.verifyIdToken(authToken);
                 if (!(checkIfAdmin(decodedToken) || checkIfVolunteer(decodedToken))) {
@@ -105,7 +106,7 @@ app.use(
                         },
                     });
                 }
-            } catch (e) {
+            } catch (e: any) {
                 if ("code" in e) {
                     if (!["auth/id-token-expired", "auth/id-token-invalid", "auth/id-token-revoked", "auth/argument-error"].includes(e.code)) {
                         console.log(e)
@@ -135,9 +136,7 @@ app.use(
                 authTokenDecoded: decodedToken,
                 authTokenRaw: authToken,
                 dataSources: {
-                    // @ts-ignore
                     positions: new Positions({ modelOrCollection: Position }),
-                    // @ts-ignore
                     candidates: new Candidates({ modelOrCollection: Candidate }),
                     users: new Users(),
                     encryptedBallots: new EncryptedBallots({ modelOrCollection: EncryptedBallot }),

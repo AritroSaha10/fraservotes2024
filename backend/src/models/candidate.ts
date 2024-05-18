@@ -1,4 +1,5 @@
-import { Document, Schema, model, ObjectId } from 'mongoose';
+import { Document, Schema, model } from 'mongoose';
+import type { ObjectId } from 'mongoose';
 
 // Candidate interface
 export interface CandidateDocument extends Document {

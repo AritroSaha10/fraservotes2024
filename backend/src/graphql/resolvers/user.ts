@@ -1,10 +1,10 @@
 import { GraphQLError } from "graphql";
-import { MyContext } from "../..";
+import type { MyContext } from "src/";
 import { getAuth } from "firebase-admin/auth";
-import validateTokenForSensitiveRoutes from "../../util/validateTokenForSensitiveRoutes.js";
-import checkIfAdmin, { validateIfAdmin } from "../../util/checkIfAdmin.js";
+import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
+import checkIfAdmin, { validateIfAdmin } from "src/util/checkIfAdmin";
 
-const getUsersResolver = async (_, __, contextValue: MyContext) => {
+const getUsersResolver = async (_: any, __: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -13,7 +13,7 @@ const getUsersResolver = async (_, __, contextValue: MyContext) => {
     return contextValue.dataSources.users.getUsers();
 }
 
-const getUserResolver = async (_, args, contextValue: MyContext) => {
+const getUserResolver = async (_: any, args: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);

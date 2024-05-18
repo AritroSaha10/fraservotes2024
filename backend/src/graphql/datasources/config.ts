@@ -1,6 +1,7 @@
 import { MongoDataSource } from 'apollo-datasource-mongodb'
-import Config, { ConfigDocument } from '../../models/config.js';
-import { isValidPGPPublicKey } from '../../util/isValidPGPPublicKey.js';
+import Config from 'src/models/config';
+import type { ConfigDocument } from 'src/models/config';
+import { isValidPGPPublicKey } from 'src/util/isValidPGPPublicKey';
 import { GraphQLError } from 'graphql';
 
 export default class ConfigDataSource extends MongoDataSource<ConfigDocument> {

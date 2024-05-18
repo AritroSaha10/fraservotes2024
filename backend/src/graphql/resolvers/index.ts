@@ -1,15 +1,15 @@
-import { MyContext } from "../../index.js";
-import { getCandidateResolver, getCandidatesResolver } from "./candidate.js";
-import { getConfigResolver, updateConfig } from "./config.js";
-import { getPositionResolver, getPositionsResolver } from "./positions.js";
-import { deleteAllResultsResolver, getAllResultsResolver, getResultResolver } from "./results.js";
-import { getUserResolver, getUsersResolver } from "./user.js";
-import { addDecryptedBallot, deleteBallots, getDecryptedBallotCount, getDecryptedBallots, getEncryptedBallotCount, getEncryptedBallots, saveDecryptedBallots, submitBallot } from "./voting.js";
-import { clearVotingStatusesResolver, getCompletedVotingStatusesCountResolver, getVotingStatusResolver, getVotingStatusesCountResolver, getVotingStatusesResolver } from "./votingStatus.js";
+import type { MyContext } from "src/";
+import { getCandidateResolver, getCandidatesResolver } from "./candidate";
+import { getConfigResolver, updateConfig } from "./config";
+import { getPositionResolver, getPositionsResolver } from "./positions";
+import { deleteAllResultsResolver, getAllResultsResolver, getResultResolver } from "./results";
+import { getUserResolver, getUsersResolver } from "./user";
+import { addDecryptedBallot, deleteBallots, getDecryptedBallotCount, getDecryptedBallots, getEncryptedBallotCount, getEncryptedBallots, saveDecryptedBallots, submitBallot } from "./voting";
+import { clearVotingStatusesResolver, getCompletedVotingStatusesCountResolver, getVotingStatusResolver, getVotingStatusesCountResolver, getVotingStatusesResolver } from "./votingStatus";
+import type { GraphQLResolverMap } from "@apollo/subgraph/dist/schema-helper";
 
 // Resolvers define how to fetch the types defined in your schema.
-// This resolver retrieves books from the "books" array above.
-const resolvers = {
+const resolvers: GraphQLResolverMap<MyContext> = {
     Query: {
         positions: getPositionsResolver,
         position: getPositionResolver,
@@ -39,27 +39,27 @@ const resolvers = {
         deleteAllResults: deleteAllResultsResolver
     },
     Candidate: {
-        position(parent, _, contextValue: MyContext) {
+        position(parent: any, _: any, contextValue) {
             return contextValue.dataSources.positions.getPosition(parent.position.toString())
         }
     },
     SelectedBallotOption: {
-        position(parent, _, contextValue: MyContext) {
+        position(parent: any, _: any, contextValue) {
             return contextValue.dataSources.positions.getPosition(parent.position.toString())
         },
-        candidates(parent, _, contextValue: MyContext) {
+        candidates(parent: any, _: any, contextValue) {
             return Promise.all(parent.candidates.map((candidateId: any) => 
                 contextValue.dataSources.candidates.getCandidate(candidateId.toString())
             ));
         }
     },
     ResultPosition: {
-        position(parent, _, contextValue: MyContext) {
+        position(parent: any, _: any, contextValue) {
             return contextValue.dataSources.positions.getPosition(parent.position.toString())
         },
     },
     ResultCandidate: {
-        candidate(parent, _, contextValue: MyContext) {
+        candidate(parent: any, _: any, contextValue) {
             return contextValue.dataSources.candidates.getCandidate(parent.candidate.toString())
         },
     }

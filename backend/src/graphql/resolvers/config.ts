@@ -1,8 +1,8 @@
-import { MyContext } from "../..";
+import type { MyContext } from "src/";
 import { getAuth } from "firebase-admin/auth";
-import validateTokenForSensitiveRoutes from "../../util/validateTokenForSensitiveRoutes.js";
-import { validateIfAdmin } from "../../util/checkIfAdmin.js";
-import { ConfigDocument } from "../../models/config";
+import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
+import { validateIfAdmin } from "src/util/checkIfAdmin";
+import type { ConfigDocument } from "src/models/config";
 import { GraphQLError } from "graphql";
 
 interface ConfigInput {
@@ -10,9 +10,9 @@ interface ConfigInput {
     publicKey: string | null | undefined;
 }
 
-const getConfigResolver = (_, __, contextValue: MyContext) => contextValue.dataSources.config.get();
+const getConfigResolver = (_: any, __: any, contextValue: MyContext) => contextValue.dataSources.config.get();
 
-const updateConfig = async (_, args: { newConfig: ConfigInput }, contextValue: MyContext) => {
+const updateConfig = async (_: any, args: { newConfig: ConfigInput }, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -21,7 +21,7 @@ const updateConfig = async (_, args: { newConfig: ConfigInput }, contextValue: M
     // Double-check if user is actually admin, since this is quite important
     const uid = contextValue.authTokenDecoded.uid;
     const { customClaims } = await auth.getUser(uid);
-    if (!("admin" in customClaims && customClaims.admin === true)) {
+    if (!(customClaims !== undefined && "admin" in customClaims && customClaims.admin === true)) {
         throw new GraphQLError("Not sufficient permissions", {
             extensions: {
                 code: "FORBIDDEN",
@@ -30,7 +30,7 @@ const updateConfig = async (_, args: { newConfig: ConfigInput }, contextValue: M
         });
     }
 
-    let newConfig: ConfigDocument;
+    let newConfig: ConfigDocument | null | undefined;
     // Set public key first since it's required to open voting
     if (args.newConfig.publicKey !== undefined && args.newConfig.publicKey !== null) {
         newConfig = await contextValue.dataSources.config.updatePublicKey(args.newConfig.publicKey);
@@ -40,7 +40,7 @@ const updateConfig = async (_, args: { newConfig: ConfigInput }, contextValue: M
     }
 
     // Just return old config if nothing changed
-    if (newConfig === undefined) {
+    if (newConfig === undefined || newConfig === null) {
         newConfig = await contextValue.dataSources.config.get();
     }
 

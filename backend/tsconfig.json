@@ -25,7 +25,13 @@
 
         "baseUrl": ".",
         "paths": {
-            
+            "@datasources/*": ["src/graphql/datasources/*"],
+            "@resolvers/*": ["src/graphql/resolvers/*"],
+            "@schemas/*": ["src/graphql/schemas/*"],
+            "@models/*": ["src/models/*"],
+            "@routes/*": ["src/routes/*"],
+            "@scripts/*": ["src/scripts/*"],
+            "@util/*": ["src/util/*"]
         }
     }
 }
