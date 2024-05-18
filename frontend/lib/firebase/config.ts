@@ -5,7 +5,7 @@ const firebaseConfig = {
     storageBucket: "fraservotes-2024.appspot.com",
     messagingSenderId: "369280041645",
     appId: "1:369280041645:web:1c3bf3e39b3bdea88f3c24",
-    measurementId: "G-QP6M6F0D5Q"
-  };
+    measurementId: "G-QP6M6F0D5Q",
+};
 
 export default firebaseConfig;

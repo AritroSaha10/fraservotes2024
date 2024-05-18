@@ -11,7 +11,9 @@ export default function Footer({ showLink }: { showLink?: boolean }) {
                 <a
                     href="https://www.aritrosaha.ca"
                     target="_blank"
-                    onClick={e => {if (!showLink) e.preventDefault()}}
+                    onClick={(e) => {
+                        if (!showLink) e.preventDefault();
+                    }}
                     rel="noreferrer"
                     className="text-blue-500 hover:underline hover:text-blue-700"
                 >

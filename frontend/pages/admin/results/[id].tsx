@@ -1,28 +1,30 @@
-import { gql, useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
-import { Chart } from "react-google-charts";
+
+import { gql, useQuery } from "@apollo/client";
 import { Typography } from "@material-tailwind/react";
-import Layout from "@/components/Layout";
+import { Chart } from "react-google-charts";
 import Swal from "sweetalert2";
 
+import Layout from "@/components/Layout";
+
 const RESULT_QUERY = gql`
-  query Result($id: ID!) {
-    result(id: $id) {
-      _id
-      timestamp
-      positions {
-        position {
-          name
+    query Result($id: ID!) {
+        result(id: $id) {
+            _id
+            timestamp
+            positions {
+                position {
+                    name
+                }
+                candidates {
+                    candidate {
+                        fullName
+                    }
+                    votes
+                }
+            }
         }
-        candidates {
-          candidate {
-            fullName
-          }
-          votes
-        }
-      }
     }
-  }
 `;
 
 function ResultsComponent() {
@@ -42,21 +44,30 @@ function ResultsComponent() {
         });
         console.error("Error while fetching main data:", error);
         return (
-            <Typography variant="h3" color="red">Something went wrong :(</Typography>
+            <Typography
+                variant="h3"
+                color="red"
+            >
+                Something went wrong :(
+            </Typography>
         );
     }
 
     // TODO: Improve later to be nicer
     if (loading) {
-        return (
-            <Typography variant="h3">Loading...</Typography>
-        );
+        return <Typography variant="h3">Loading...</Typography>;
     }
 
     if (!data || !data.result) {
         return (
             <>
-                <Typography variant="h2" className="mb-4" color="red">404 - Result Not Found</Typography>
+                <Typography
+                    variant="h2"
+                    className="mb-4"
+                    color="red"
+                >
+                    404 - Result Not Found
+                </Typography>
                 <Typography variant="paragraph">
                     The result you are looking for does not exist. Please check the URL or go back to the results page.
                 </Typography>
@@ -68,13 +79,22 @@ function ResultsComponent() {
 
     return (
         <>
-            <Typography variant="h4" className="mb-4 text-center">
+            <Typography
+                variant="h4"
+                className="mb-4 text-center"
+            >
                 Calculated at {new Date(result.timestamp * 1000).toLocaleString()}
             </Typography>
 
             {result.positions.map((positionResult: any) => (
-                <div key={positionResult.position.name} className="w-[90vw] lg:w-[70vw] mb-8">
-                    <Typography variant="h2" className="mb-2 text-center lg:text-left">
+                <div
+                    key={positionResult.position.name}
+                    className="w-[90vw] lg:w-[70vw] mb-8"
+                >
+                    <Typography
+                        variant="h2"
+                        className="mb-2 text-center lg:text-left"
+                    >
                         {positionResult.position.name}
                     </Typography>
 
@@ -98,9 +118,18 @@ function ResultsComponent() {
 
 export default function ResultsIndividualPage() {
     return (
-        <Layout name="Result Details" adminProtected className="flex flex-col p-8 items-center">
-            <Typography variant="h1" className="mb-4 text-center">Result Details</Typography>
+        <Layout
+            name="Result Details"
+            adminProtected
+            className="flex flex-col p-8 items-center"
+        >
+            <Typography
+                variant="h1"
+                className="mb-4 text-center"
+            >
+                Result Details
+            </Typography>
             <ResultsComponent />
         </Layout>
-    )
+    );
 }

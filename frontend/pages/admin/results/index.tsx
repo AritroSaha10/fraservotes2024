@@ -1,16 +1,18 @@
-import { gql, useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
+
+import { gql, useQuery } from "@apollo/client";
 import { Card, CardBody, Typography } from "@material-tailwind/react";
-import Layout from "@/components/Layout";
 import Swal from "sweetalert2";
 
+import Layout from "@/components/Layout";
+
 const ALL_RESULTS_QUERY = gql`
-  query AllResults {
-    allResults {
-      _id
-      timestamp
+    query AllResults {
+        allResults {
+            _id
+            timestamp
+        }
     }
-  }
 `;
 
 function ResultCards() {
@@ -25,15 +27,18 @@ function ResultCards() {
         });
         console.error("Error while fetching main data:", error);
         return (
-            <Typography variant="h3" color="red">Something went wrong :(</Typography>
+            <Typography
+                variant="h3"
+                color="red"
+            >
+                Something went wrong :(
+            </Typography>
         );
     }
 
     // TODO: Improve later to be nicer
     if (loading) {
-        return (
-            <Typography variant="h3">Loading...</Typography>
-        );
+        return <Typography variant="h3">Loading...</Typography>;
     }
 
     return (
@@ -49,7 +54,10 @@ function ResultCards() {
                             Ballot Count at {new Date(result.timestamp * 1000).toLocaleString()}
                         </Typography>
 
-                        <Typography variant="paragraph" color="gray">
+                        <Typography
+                            variant="paragraph"
+                            color="gray"
+                        >
                             Click me to view results...
                         </Typography>
                     </CardBody>
@@ -57,25 +65,42 @@ function ResultCards() {
             ))}
             {data.allResults.length === 0 ? (
                 <div className="flex flex-col gap-2 text-center items-center">
-                    <Typography variant="h3" color="red">
+                    <Typography
+                        variant="h3"
+                        color="red"
+                    >
                         No results were found :(
                     </Typography>
 
-                    <Typography variant="lead" color="gray">
+                    <Typography
+                        variant="lead"
+                        color="gray"
+                    >
                         You can check this page when a ballot count is run.
                     </Typography>
                 </div>
-            ) : <></>}
+            ) : (
+                <></>
+            )}
         </div>
     );
 }
 
 export default function AdminResultsPage() {
     return (
-        <Layout name="Admin Results" adminProtected className="flex flex-col p-8 items-center">
-            <Typography variant="h1" className="mb-4">Election Results</Typography>
+        <Layout
+            name="Admin Results"
+            adminProtected
+            className="flex flex-col p-8 items-center"
+        >
+            <Typography
+                variant="h1"
+                className="mb-4"
+            >
+                Election Results
+            </Typography>
 
             <ResultCards />
         </Layout>
-    )
+    );
 }

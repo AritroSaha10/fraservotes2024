@@ -11,13 +11,13 @@ export function NoAccessComponent() {
                 <h2 className="text-3xl text-center mb-6 text-black">Forbidden</h2>
 
                 <p className="text-xl text-center mb-6 text-gray-700 lg:w-3/4">
-                    Sorry, you don&apos;t have access to this website. This is only accessible to volunteers and admins helping with
-                    the SAC voting process. If you believe you should have access, please contact Aritro, Thoa, or an SAC teacher supervisor.
-                    You have been automatically signed out.
+                    Sorry, you don&apos;t have access to this website. This is only accessible to volunteers and admins
+                    helping with the SAC voting process. If you believe you should have access, please contact Aritro,
+                    Thoa, or an SAC teacher supervisor. You have been automatically signed out.
                 </p>
             </div>
         </div>
-    )
+    );
 }
 
 export default function NoAccess() {

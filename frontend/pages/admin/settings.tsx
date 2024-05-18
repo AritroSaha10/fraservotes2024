@@ -1,41 +1,43 @@
-import Layout from "@/components/Layout";
-import { gql, useQuery, useMutation } from "@apollo/client";
 import { useState, useEffect, ChangeEvent } from "react";
+
+import { gql, useQuery, useMutation } from "@apollo/client";
 import { Button, Typography, Card, CardBody, Input, Tooltip } from "@material-tailwind/react";
+import * as openpgp from "openpgp";
 import Swal from "sweetalert2";
-import * as openpgp from 'openpgp';
+
+import Layout from "@/components/Layout";
 
 const MAIN_DATA_QUERY = gql`
-  query MainData {
-    config {
-      isOpen
-      publicKey
+    query MainData {
+        config {
+            isOpen
+            publicKey
+        }
+        encryptedBallotCount
     }
-    encryptedBallotCount
-  }
 `;
 
 const UPDATE_CONFIG_MUTATION = gql`
-  mutation UpdateConfig($newConfig: ConfigInput!) {
-    updateConfig(newConfig: $newConfig) {
-      isOpen
-      publicKey
+    mutation UpdateConfig($newConfig: ConfigInput!) {
+        updateConfig(newConfig: $newConfig) {
+            isOpen
+            publicKey
+        }
     }
-  }
 `;
 
 const RESET_VOTING_MUTATION = gql`
-  mutation ResetVoting {
-    deleteBallots {
-      void
+    mutation ResetVoting {
+        deleteBallots {
+            void
+        }
+        resetVotingStatuses {
+            void
+        }
+        deleteAllResults {
+            void
+        }
     }
-    resetVotingStatuses {
-      void
-    }
-    deleteAllResults {
-      void
-    }
-  }
 `;
 
 interface Config {
@@ -70,13 +72,13 @@ function AdminConfigPageComponent() {
                     const publicKeyObject = await openpgp.readKey({ armoredKey: data.config.publicKey });
                     const details = {
                         keyID: publicKeyObject.getKeyIDs()[0].toHex(),
-                        creationDate: publicKeyObject.getCreationTime().toLocaleString('en-US', {
+                        creationDate: publicKeyObject.getCreationTime().toLocaleString("en-US", {
                             day: "2-digit",
                             month: "2-digit",
                             year: "numeric",
                             hour: "2-digit",
                             minute: "2-digit",
-                            second: "2-digit"
+                            second: "2-digit",
                         }),
                         userIDs: publicKeyObject.getUserIDs(),
                     };
@@ -96,15 +98,18 @@ function AdminConfigPageComponent() {
         });
         console.error("Error while fetching main data:", error);
         return (
-            <Typography variant="h1" color="red">Something went wrong :(</Typography>
+            <Typography
+                variant="h1"
+                color="red"
+            >
+                Something went wrong :(
+            </Typography>
         );
     }
 
     // TODO: Improve later to be nicer
     if (loading) {
-        return (
-            <Typography variant="h1">Loading...</Typography>
-        );
+        return <Typography variant="h1">Loading...</Typography>;
     }
 
     const { config, encryptedBallotCount } = data!;
@@ -135,7 +140,7 @@ function AdminConfigPageComponent() {
 
     const handlePublicKeyChange = async (event: ChangeEvent<HTMLInputElement>) => {
         setBusy(true);
-        
+
         const file = event.target.files?.[0];
         if (file) {
             const reader = new FileReader();
@@ -148,33 +153,35 @@ function AdminConfigPageComponent() {
                             Swal.fire({
                                 title: "Private Key Uploaded",
                                 text: "Please upload a public key instead of a private key. You can usually differentiate them by the suffix on the filename (sec -> private, pub -> public).",
-                                icon: 'error'
+                                icon: "error",
                             });
                             setBusy(false);
                             return;
                         }
 
                         Swal.fire({
-                            title: 'Confirm Public Key Upload',
-                            text: 'Are you sure you want to upload this public key?',
-                            icon: 'warning',
+                            title: "Confirm Public Key Upload",
+                            text: "Are you sure you want to upload this public key?",
+                            icon: "warning",
                             showCancelButton: true,
-                            confirmButtonText: 'Yes, upload it!',
-                            cancelButtonText: 'No, cancel',
-                        }).then(async (result) => {
-                            if (result.isConfirmed) {
-                                const newConfig = { publicKey };
-                                await updateConfig({ variables: { newConfig } });
-                                Swal.fire({
-                                    title: "Success",
-                                    text: "Public key updated successfully.",
-                                    icon: "success",
-                                });
-                                refetch();
-                            }
-                        }).finally(() => {
-                            setBusy(false);
-                        });
+                            confirmButtonText: "Yes, upload it!",
+                            cancelButtonText: "No, cancel",
+                        })
+                            .then(async (result) => {
+                                if (result.isConfirmed) {
+                                    const newConfig = { publicKey };
+                                    await updateConfig({ variables: { newConfig } });
+                                    Swal.fire({
+                                        title: "Success",
+                                        text: "Public key updated successfully.",
+                                        icon: "success",
+                                    });
+                                    refetch();
+                                }
+                            })
+                            .finally(() => {
+                                setBusy(false);
+                            });
                     } else {
                         setBusy(false);
                     }
@@ -197,12 +204,12 @@ function AdminConfigPageComponent() {
 
     const handleResetData = async () => {
         const { isConfirmed } = await Swal.fire({
-            title: 'Are you sure?',
+            title: "Are you sure?",
             text: "This will reset all ballots and voting statuses. This action cannot be undone.",
-            icon: 'warning',
+            icon: "warning",
             showCancelButton: true,
-            confirmButtonText: 'Yes, reset it!',
-            cancelButtonText: 'No, keep it',
+            confirmButtonText: "Yes, reset it!",
+            cancelButtonText: "No, keep it",
         });
 
         if (isConfirmed) {
@@ -227,16 +234,46 @@ function AdminConfigPageComponent() {
 
     const renderPublicKeyDetails = () => {
         if (!publicKeyDetails) {
-            return <Typography variant="h5" color="red" className="mb-4">No public key is currently uploaded.</Typography>;
+            return (
+                <Typography
+                    variant="h5"
+                    color="red"
+                    className="mb-4"
+                >
+                    No public key is currently uploaded.
+                </Typography>
+            );
         }
 
         return (
             <div className="mb-4">
-                <Typography variant="h5" color="green" className="mb-4">Public Key is uploaded.</Typography>
-                <Typography variant="h6" color="blue-gray">Key ID: {publicKeyDetails.keyID}</Typography>
-                <Typography variant="h6" color="blue-gray">Creation Date: {publicKeyDetails.creationDate}</Typography>
+                <Typography
+                    variant="h5"
+                    color="green"
+                    className="mb-4"
+                >
+                    Public Key is uploaded.
+                </Typography>
+                <Typography
+                    variant="h6"
+                    color="blue-gray"
+                >
+                    Key ID: {publicKeyDetails.keyID}
+                </Typography>
+                <Typography
+                    variant="h6"
+                    color="blue-gray"
+                >
+                    Creation Date: {publicKeyDetails.creationDate}
+                </Typography>
                 {publicKeyDetails.userIDs.map((userID, index) => (
-                    <Typography key={index} variant="h6" color="blue-gray">User ID: {userID}</Typography>
+                    <Typography
+                        key={index}
+                        variant="h6"
+                        color="blue-gray"
+                    >
+                        User ID: {userID}
+                    </Typography>
                 ))}
             </div>
         );
@@ -244,15 +281,32 @@ function AdminConfigPageComponent() {
 
     return (
         <>
-            <Typography variant="h1" className="mb-8">Settings</Typography>
+            <Typography
+                variant="h1"
+                className="mb-8"
+            >
+                Settings
+            </Typography>
 
             <Card className="w-full lg:w-2/3 mb-8 shadow-lg">
                 <CardBody className="p-6">
-                    <Typography variant="h4" color="blue-gray" className="mb-4">
+                    <Typography
+                        variant="h4"
+                        color="blue-gray"
+                        className="mb-4"
+                    >
                         Voting Status
                     </Typography>
-                    <Typography variant="h5" color="blue-gray" className="mb-4">
-                        Voting is currently <span className={config.isOpen ? "text-green-500" : "text-red-500"}>{config.isOpen ? "open" : "closed"}</span>.
+                    <Typography
+                        variant="h5"
+                        color="blue-gray"
+                        className="mb-4"
+                    >
+                        Voting is currently{" "}
+                        <span className={config.isOpen ? "text-green-500" : "text-red-500"}>
+                            {config.isOpen ? "open" : "closed"}
+                        </span>
+                        .
                     </Typography>
                     <Button
                         color={config.isOpen ? "red" : "green"}
@@ -266,11 +320,19 @@ function AdminConfigPageComponent() {
 
             <Card className="w-full lg:w-2/3 mb-8 shadow-lg">
                 <CardBody className="p-6">
-                    <Typography variant="h4" color="blue-gray" className="mb-4">
+                    <Typography
+                        variant="h4"
+                        color="blue-gray"
+                        className="mb-4"
+                    >
                         Public Key Management
                     </Typography>
                     {renderPublicKeyDetails()}
-                    <Typography variant="h5" color="blue-gray" className="mb-4">
+                    <Typography
+                        variant="h5"
+                        color="blue-gray"
+                        className="mb-4"
+                    >
                         Upload New Public Key
                     </Typography>
                     <Tooltip
@@ -278,21 +340,25 @@ function AdminConfigPageComponent() {
                         placement="bottom"
                         className={!(config.isOpen || encryptedBallotCount > 0) ? "hidden" : ""}
                     >
-                    <div className="mb-4">
-                        <Input
-                            type="file"
-                            accept=".asc"
-                            onChange={handlePublicKeyChange}
-                            disabled={busy || config.isOpen || encryptedBallotCount > 0}
-                        />
-                    </div>
+                        <div className="mb-4">
+                            <Input
+                                type="file"
+                                accept=".asc"
+                                onChange={handlePublicKeyChange}
+                                disabled={busy || config.isOpen || encryptedBallotCount > 0}
+                            />
+                        </div>
                     </Tooltip>
                 </CardBody>
             </Card>
 
             <Card className="w-full lg:w-2/3 mb-8 shadow-lg">
                 <CardBody className="p-6">
-                    <Typography variant="h4" color="blue-gray" className="mb-4">
+                    <Typography
+                        variant="h4"
+                        color="blue-gray"
+                        className="mb-4"
+                    >
                         Reset Data
                     </Typography>
                     <Button
@@ -310,8 +376,12 @@ function AdminConfigPageComponent() {
 
 export default function AdminConfigPage() {
     return (
-        <Layout name="Settings" adminProtected className="flex flex-col p-8 items-center">
+        <Layout
+            name="Settings"
+            adminProtected
+            className="flex flex-col p-8 items-center"
+        >
             <AdminConfigPageComponent />
         </Layout>
-    )
+    );
 }

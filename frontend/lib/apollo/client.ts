@@ -1,5 +1,6 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
-import { setContext } from '@apollo/client/link/context';
+import { setContext } from "@apollo/client/link/context";
+
 import getTokenSafely from "../auth/getTokenSafely";
 
 const httpLink = createHttpLink({
@@ -15,8 +16,8 @@ const authLink = setContext(async (_, { headers }) => {
         headers: {
             ...headers,
             authorization: token ? `Bearer ${token}` : "",
-        }
-    }
+        },
+    };
 });
 
 const createApolloClient = () => {

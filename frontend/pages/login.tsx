@@ -15,16 +15,16 @@ import {
     signInWithRedirect,
     signOut,
 } from "firebase/auth";
+import { generate } from "random-words";
+import GoogleButton from "react-google-button";
 
 import auth from "@/lib/firebase/auth";
+import isUndefinedOrNull from "@/util/undefinedOrNull";
+import { generateVolunteerKey } from "@/util/volunteerKey";
 
+import { useFirebaseAuth } from "@/components/FirebaseAuthContext";
 import Layout from "@/components/Layout";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { useFirebaseAuth } from "@/components/FirebaseAuthContext";
-import isUndefinedOrNull from "@/util/undefinedOrNull";
-import GoogleButton from "react-google-button";
-import { generate } from "random-words";
-import { generateVolunteerKey } from "@/util/volunteerKey";
 
 export default function Login() {
     const [loggingIn, setLoggingIn] = useState(false);
@@ -33,7 +33,7 @@ export default function Login() {
     authProvider.setCustomParameters({
         login_hint: "000000@pdsb.net",
         hd: "pdsb.net", // Only allows users part of pdsb.net organization
-        prompt: 'consent',
+        prompt: "consent",
     });
 
     const redirectBasedOnRoles = async (claims: ParsedToken) => {
@@ -45,7 +45,7 @@ export default function Login() {
         } else {
             await Promise.all([signOut(auth), router.push("/no-access")]);
         }
-    }
+    };
 
     const logIn = async () => {
         // Prompt user to log in
@@ -62,11 +62,11 @@ export default function Login() {
             await redirectBasedOnRoles(claims);
         } catch (e) {
             console.error(e);
-            alert("Something went wrong while signing you in. Please try again.")
+            alert("Something went wrong while signing you in. Please try again.");
         } finally {
             setLoggingIn(false);
         }
-     };
+    };
 
     const { user, loaded } = useFirebaseAuth();
 
@@ -100,7 +100,11 @@ export default function Login() {
                     Log into FraserVotes
                 </Typography>
 
-                <GoogleButton onClick={() => { logIn() }} />
+                <GoogleButton
+                    onClick={() => {
+                        logIn();
+                    }}
+                />
             </div>
         </Layout>
     );

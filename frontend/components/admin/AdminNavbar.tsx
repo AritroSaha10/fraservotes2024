@@ -25,12 +25,13 @@ import {
     Navbar,
     Typography,
 } from "@material-tailwind/react";
+import { signOut } from "firebase/auth";
+
+import auth from "@/lib/firebase/auth";
 
 import { useFirebaseAuth } from "@/components/FirebaseAuthContext";
 
 import DefaultAvatar from "@/assets/default-avatar.jpg";
-import { signOut } from "firebase/auth";
-import auth from "@/lib/firebase/auth";
 
 // profile menu component
 const profileMenuItems = [
@@ -118,24 +119,23 @@ const navListItems = [
     {
         label: "Overview",
         icon: EyeIcon,
-        link: "/admin"
+        link: "/admin",
     },
     {
         label: "Ballot Count",
         icon: ArchiveBoxArrowDownIcon,
-        link: "/admin/count"
+        link: "/admin/count",
     },
     {
         label: "Results",
         icon: ChartPieIcon,
-        link: "/admin/results"
+        link: "/admin/results",
     },
     {
         label: "Settings",
         icon: Cog6ToothIcon,
-        link: "/admin/settings"
+        link: "/admin/settings",
     },
-    
 ];
 
 function NavList() {
