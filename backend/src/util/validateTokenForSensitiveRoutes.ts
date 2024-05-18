@@ -10,7 +10,7 @@ import { GraphQLError } from "graphql";
 export default async function validateTokenForSensitiveRoutes(auth: Auth, authTokenRaw: string) {
     let decodedToken: DecodedIdToken;
     try {
-        decodedToken = await auth.verifyIdToken(authTokenRaw, true)
+        decodedToken = await auth.verifyIdToken(authTokenRaw, true);
     } catch (e) {
         if ("code" in e) {
             if (!["auth/expired-id-token", "auth/invalid-id-token", "auth/revoked-id-token", "auth/user-disabled"].includes(e.code)) {
