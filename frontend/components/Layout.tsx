@@ -51,6 +51,7 @@ interface LayoutProps extends PropsWithChildren {
   className?: string;
   userProtected?: boolean;
   adminProtected?: boolean;
+  description?: string;
 }
 
 export default function Layout({
@@ -60,6 +61,7 @@ export default function Layout({
   className,
   userProtected,
   adminProtected,
+  description
 }: LayoutProps) {
   const { user, loaded } = useFirebaseAuth();
   const isRouterLoading = useIsRouterLoading();
@@ -69,9 +71,7 @@ export default function Layout({
   );
 
   const title = `${name} | FraserVotes`;
-  const description = adminProtected
-    ? "The digital voting platform for John Fraser S.S."
-    : "An admin page for FraserVotes.";
+  description = description ?? "The digital voting platform for the John Fraser SAC.";
 
   useEffect(() => {
     if (loaded && (!isRouterLoading)) {

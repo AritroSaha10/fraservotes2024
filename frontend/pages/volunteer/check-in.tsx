@@ -500,7 +500,12 @@ export default function VolunteerCheckIn() {
     const configQuery = useQuery(configQueryOp);
 
     return (
-        <Layout name="Check-in" userProtected className="flex flex-col items-center justify-center py-8">
+        <Layout 
+            name="Check-in" 
+            userProtected 
+            className="flex flex-col items-center justify-center py-8" 
+            description="The volunteer check-in page for FraserVotes."
+        >
             {pageStatus === PageStatus.VOTING ? (
                 <VotingSection pageStatus={pageStatus} setPageStatus={setPageStatus} studentNumber={studentNumberInput} setStudentNumberInput={setStudentNumberInput} configQuery={configQuery} />
             ) : (

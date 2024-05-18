@@ -81,6 +81,7 @@ export default function Login() {
         <Layout
             name="Login"
             className="flex flex-col items-center justify-center"
+            description="The login page for FraserVotes. Please note that this only works with PDSB accounts."
         >
             <Head>
                 <meta
