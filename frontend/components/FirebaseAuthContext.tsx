@@ -4,7 +4,6 @@ import router from "next/router";
 
 import { User as firebaseUser, onAuthStateChanged, signOut } from "firebase/auth";
 
-// import addUser from "@/lib/backend/user/addUser";
 import auth from "@/lib/firebase/auth";
 import { clearVolunteerKey } from "@/util/volunteerKey";
 

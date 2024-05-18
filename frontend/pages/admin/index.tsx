@@ -1,15 +1,10 @@
-import { useEffect, useMemo } from "react";
-
-import { useRouter } from "next/router";
+import { useMemo } from "react";
 
 import { gql, useQuery } from "@apollo/client";
 import { CheckIcon } from "@heroicons/react/16/solid";
-import { Button, Checkbox, Typography } from "@material-tailwind/react";
-import { signOut } from "firebase/auth";
+import { Typography } from "@material-tailwind/react";
 import { MaterialReactTable, useMaterialReactTable, type MRT_ColumnDef } from "material-react-table";
 import Swal from "sweetalert2";
-
-import auth from "@/lib/firebase/auth";
 
 import Layout from "@/components/Layout";
 
@@ -38,7 +33,6 @@ interface VotingStatus {
 }
 
 export default function AdminPage() {
-    const router = useRouter();
     const {
         loading: mainDataLoading,
         error: mainDataError,

@@ -1,11 +1,7 @@
-import { PropsWithChildren, ReactElement, ReactNode, useEffect, useState } from "react";
+import { PropsWithChildren, ReactNode, useEffect, useState } from "react";
 
 import Head from "next/head";
-import { useRouter } from "next/router";
 
-import LoadingSpinner from "./LoadingSpinner";
-import AdminNavbar from "./admin/AdminNavbar";
-import useIsRouterLoading from "./useIsRouterLoading";
 import { Typography } from "@material-tailwind/react";
 import { signOut } from "firebase/auth";
 import { m } from "framer-motion";
@@ -15,13 +11,12 @@ import isUndefinedOrNull from "@/util/undefinedOrNull";
 
 import { useFirebaseAuth } from "@/components/FirebaseAuthContext";
 import Footer from "@/components/Footer";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import AdminNavbar from "@/components/admin/AdminNavbar";
+import useIsRouterLoading from "@/components/useIsRouterLoading";
 import { UnauthorizedComponent } from "@/pages/401";
 import { ForbiddenComponent } from "@/pages/403";
 import { NoAccessComponent } from "@/pages/no-access";
-
-// import AdminRestrictedPage from "@/components/admin/AdminRestrictedPage";
-// import { ComplexNavbar as AdminNavbar } from "@/components/admin/Navbar";
-// import { ComplexNavbar as UserNavbar } from "@/components/user/Navbar";
 
 const transition = { ease: [0.6, 0.01, 0.0, 0.9] };
 

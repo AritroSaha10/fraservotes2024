@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 
-import getTokenSafely from "../auth/getTokenSafely";
+import getTokenSafely from "@/lib/auth/getTokenSafely";
 
 const httpLink = createHttpLink({
     uri: process.env.NEXT_PUBLIC_BACKEND_URL,

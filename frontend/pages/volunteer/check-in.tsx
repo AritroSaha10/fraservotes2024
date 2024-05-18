@@ -1,17 +1,15 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import Image from "next/image";
-import { useRouter } from "next/router";
 
-import { OperationVariables, QueryResult, gql, useApolloClient, useLazyQuery, useQuery } from "@apollo/client";
-import { Button, Input, Typography } from "@material-tailwind/react";
+import { OperationVariables, QueryResult, gql, useApolloClient, useQuery } from "@apollo/client";
+import { Button, Typography } from "@material-tailwind/react";
 import { createMessage, encrypt, readKey } from "openpgp";
 import Swal from "sweetalert2";
 
 import { sha256 } from "@/util/hashUsingSHA256";
-import { generateVolunteerKey, getVolunteerKeyHash, volunteerKeyLocalStorageKey } from "@/util/volunteerKey";
+import { generateVolunteerKey, getVolunteerKeyHash } from "@/util/volunteerKey";
 
-import { useFirebaseAuth } from "@/components/FirebaseAuthContext";
 import Layout from "@/components/Layout";
 
 enum PageStatus {

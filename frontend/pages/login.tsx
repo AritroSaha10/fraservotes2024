@@ -4,27 +4,19 @@ import Head from "next/head";
 import router from "next/router";
 
 import { Typography } from "@material-tailwind/react";
-import { GoogleLogin } from "@react-oauth/google";
 import {
     GoogleAuthProvider,
     ParsedToken,
-    browserLocalPersistence,
-    setPersistence,
-    signInWithCredential,
     signInWithPopup,
-    signInWithRedirect,
     signOut,
 } from "firebase/auth";
-import { generate } from "random-words";
 import GoogleButton from "react-google-button";
 
 import auth from "@/lib/firebase/auth";
 import isUndefinedOrNull from "@/util/undefinedOrNull";
-import { generateVolunteerKey } from "@/util/volunteerKey";
 
 import { useFirebaseAuth } from "@/components/FirebaseAuthContext";
 import Layout from "@/components/Layout";
-import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function Login() {
     const [loggingIn, setLoggingIn] = useState(false);

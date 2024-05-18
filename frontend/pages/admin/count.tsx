@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { ArrowUpTrayIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
-import { Button, Card, CardBody, CardHeader, Input, Tooltip, Typography } from "@material-tailwind/react";
+import { Button, Card, CardBody, Input, Tooltip, Typography } from "@material-tailwind/react";
 import * as openpgp from "openpgp";
 import Swal from "sweetalert2";
 
