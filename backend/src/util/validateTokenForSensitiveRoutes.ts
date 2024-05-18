@@ -1,4 +1,5 @@
 import { Auth, DecodedIdToken } from "firebase-admin/auth";
+
 import { GraphQLError } from "graphql";
 
 /**
@@ -13,22 +14,29 @@ export default async function validateTokenForSensitiveRoutes(auth: Auth, authTo
         decodedToken = await auth.verifyIdToken(authTokenRaw, true);
     } catch (e) {
         if ("code" in e) {
-            if (!["auth/expired-id-token", "auth/invalid-id-token", "auth/revoked-id-token", "auth/user-disabled"].includes(e.code)) {
-                console.error("Error while authenticating user: " + e)
+            if (
+                ![
+                    "auth/expired-id-token",
+                    "auth/invalid-id-token",
+                    "auth/revoked-id-token",
+                    "auth/user-disabled",
+                ].includes(e.code)
+            ) {
+                console.error("Error while authenticating user: " + e);
             }
 
-            throw new GraphQLError('Could not authenticate user', {
+            throw new GraphQLError("Could not authenticate user", {
                 extensions: {
-                    code: 'UNAUTHENTICATED',
+                    code: "UNAUTHENTICATED",
                     http: { status: 401 },
                 },
             });
         } else {
-            console.error("Error while authenticating user: " + e)
+            console.error("Error while authenticating user: " + e);
 
-            throw new GraphQLError('Could not authenticate user', {
+            throw new GraphQLError("Could not authenticate user", {
                 extensions: {
-                    code: 'SERVER_ERROR',
+                    code: "SERVER_ERROR",
                     http: { status: 500 },
                 },
             });
@@ -36,12 +44,17 @@ export default async function validateTokenForSensitiveRoutes(auth: Auth, authTo
     }
 
     // Ensure token is very fresh (max. 5 minutes old)
-    const currTimestampUTC = Math.floor((new Date()).getTime() / 1000)
+    const currTimestampUTC = Math.floor(new Date().getTime() / 1000);
     if (currTimestampUTC - decodedToken.iat > 5 * 60) {
-        console.debug("Timestamps for old token", currTimestampUTC, decodedToken.iat, currTimestampUTC - decodedToken.iat);
-        throw new GraphQLError('Token is too old', {
+        console.debug(
+            "Timestamps for old token",
+            currTimestampUTC,
+            decodedToken.iat,
+            currTimestampUTC - decodedToken.iat,
+        );
+        throw new GraphQLError("Token is too old", {
             extensions: {
-                code: 'UNAUTHENTICATED',
+                code: "UNAUTHENTICATED",
                 http: { status: 401 },
             },
         });

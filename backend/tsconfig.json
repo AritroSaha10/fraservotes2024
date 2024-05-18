@@ -1,8 +1,5 @@
 {
-    "include": [
-        "src/**/*",
-        "src/graphql/schemas/*.graphql"
-    ],
+    "include": ["src/**/*", "src/graphql/schemas/*.graphql"],
     "compilerOptions": {
         "lib": ["ESNext"],
         "target": "ESNext",

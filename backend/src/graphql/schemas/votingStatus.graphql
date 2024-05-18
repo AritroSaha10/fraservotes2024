@@ -1,21 +1,21 @@
 extend type Query {
-  votingStatuses: [VotingStatus!]!
-  votingStatus(filter: VotingStatusFilter!): VotingStatus
-  votingStatusesCount: Int!
-  completedVotingStatusesCount: Int!
+    votingStatuses: [VotingStatus!]!
+    votingStatus(filter: VotingStatusFilter!): VotingStatus
+    votingStatusesCount: Int!
+    completedVotingStatusesCount: Int!
 }
 
 extend type Mutation {
-  resetVotingStatuses: Void
+    resetVotingStatuses: Void
 }
 
 type VotingStatus {
-  _id: ID!
-  studentNumber: Int!
-  voted: Boolean!
+    _id: ID!
+    studentNumber: Int!
+    voted: Boolean!
 }
 
 input VotingStatusFilter {
-  _id: ID
-  studentNumber: Int
+    _id: ID
+    studentNumber: Int
 }

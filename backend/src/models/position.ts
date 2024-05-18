@@ -1,4 +1,4 @@
-import { Document, Schema, model } from 'mongoose';
+import { Document, Schema, model } from "mongoose";
 
 // Position interface
 export interface PositionDocument extends Document {
@@ -9,10 +9,10 @@ export interface PositionDocument extends Document {
 // Position Schema
 const positionSchema = new Schema<PositionDocument>({
     name: { type: String, required: true },
-    spotsAvailable: { type: Number, required: true }
+    spotsAvailable: { type: Number, required: true },
 });
 
 // Position Model
-const Position = model<PositionDocument>('Position', positionSchema);
+const Position = model<PositionDocument>("Position", positionSchema);
 
 export default Position;

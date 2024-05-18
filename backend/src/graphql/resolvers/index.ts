@@ -1,12 +1,28 @@
-import type { MyContext } from "src/";
+import type { GraphQLResolverMap } from "@apollo/subgraph/dist/schema-helper";
+
 import { getCandidateResolver, getCandidatesResolver } from "./candidate";
 import { getConfigResolver, updateConfig } from "./config";
 import { getPositionResolver, getPositionsResolver } from "./positions";
 import { deleteAllResultsResolver, getAllResultsResolver, getResultResolver } from "./results";
 import { getUserResolver, getUsersResolver } from "./user";
-import { addDecryptedBallot, deleteBallots, getDecryptedBallotCount, getDecryptedBallots, getEncryptedBallotCount, getEncryptedBallots, saveDecryptedBallots, submitBallot } from "./voting";
-import { clearVotingStatusesResolver, getCompletedVotingStatusesCountResolver, getVotingStatusResolver, getVotingStatusesCountResolver, getVotingStatusesResolver } from "./votingStatus";
-import type { GraphQLResolverMap } from "@apollo/subgraph/dist/schema-helper";
+import {
+    addDecryptedBallot,
+    deleteBallots,
+    getDecryptedBallotCount,
+    getDecryptedBallots,
+    getEncryptedBallotCount,
+    getEncryptedBallots,
+    saveDecryptedBallots,
+    submitBallot,
+} from "./voting";
+import {
+    clearVotingStatusesResolver,
+    getCompletedVotingStatusesCountResolver,
+    getVotingStatusResolver,
+    getVotingStatusesCountResolver,
+    getVotingStatusesResolver,
+} from "./votingStatus";
+import type { MyContext } from "src/";
 
 // Resolvers define how to fetch the types defined in your schema.
 const resolvers: GraphQLResolverMap<MyContext> = {
@@ -36,33 +52,35 @@ const resolvers: GraphQLResolverMap<MyContext> = {
         resetVotingStatuses: clearVotingStatusesResolver,
         updateConfig,
         saveDecryptedBallots,
-        deleteAllResults: deleteAllResultsResolver
+        deleteAllResults: deleteAllResultsResolver,
     },
     Candidate: {
         position(parent: any, _: any, contextValue) {
-            return contextValue.dataSources.positions.getPosition(parent.position.toString())
-        }
+            return contextValue.dataSources.positions.getPosition(parent.position.toString());
+        },
     },
     SelectedBallotOption: {
         position(parent: any, _: any, contextValue) {
-            return contextValue.dataSources.positions.getPosition(parent.position.toString())
+            return contextValue.dataSources.positions.getPosition(parent.position.toString());
         },
         candidates(parent: any, _: any, contextValue) {
-            return Promise.all(parent.candidates.map((candidateId: any) => 
-                contextValue.dataSources.candidates.getCandidate(candidateId.toString())
-            ));
-        }
+            return Promise.all(
+                parent.candidates.map((candidateId: any) =>
+                    contextValue.dataSources.candidates.getCandidate(candidateId.toString()),
+                ),
+            );
+        },
     },
     ResultPosition: {
         position(parent: any, _: any, contextValue) {
-            return contextValue.dataSources.positions.getPosition(parent.position.toString())
+            return contextValue.dataSources.positions.getPosition(parent.position.toString());
         },
     },
     ResultCandidate: {
         candidate(parent: any, _: any, contextValue) {
-            return contextValue.dataSources.candidates.getCandidate(parent.candidate.toString())
+            return contextValue.dataSources.candidates.getCandidate(parent.candidate.toString());
         },
-    }
+    },
 };
 
 export default resolvers;

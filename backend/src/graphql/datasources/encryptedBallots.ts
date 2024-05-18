@@ -1,11 +1,12 @@
-import { MongoDataSource } from 'apollo-datasource-mongodb'
+import { MongoDataSource } from "apollo-datasource-mongodb";
+
 import type { EncryptedBallotDocument } from "src/models/encryptedBallot";
 
 export default class EncryptedBallots extends MongoDataSource<EncryptedBallotDocument> {
     submitBallot(encryptedBallot: string) {
-        return this.model.create({ 
+        return this.model.create({
             timestampUTC: Math.floor(new Date().getTime() / 1000),
-            encryptedBallot
+            encryptedBallot,
         });
     }
 

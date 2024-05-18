@@ -1,15 +1,18 @@
-import { GraphQLError } from "graphql";
-import type { MyContext } from "src";
 import { getAuth } from "firebase-admin/auth";
-import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
-import { validateIfAdmin } from "src/util/checkIfAdmin";
-import type { SelectedOption } from "src/models/decryptedBallot";
-import { isPGPEncrypted } from "src/util/isPGPEncrypted";
-import type { PositionDocument } from "src/models/position";
-import type { CandidateDocument } from "src/models/candidate";
+
+import { GraphQLError } from "graphql";
 import { Types } from "mongoose";
+import type { MyContext } from "src";
+
+import type { CandidateDocument } from "src/models/candidate";
+import type { SelectedOption } from "src/models/decryptedBallot";
+import type { PositionDocument } from "src/models/position";
 import Results from "src/models/results";
 import type { ResultsDocument } from "src/models/results";
+
+import { validateIfAdmin } from "src/util/checkIfAdmin";
+import { isPGPEncrypted } from "src/util/isPGPEncrypted";
+import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
 
 const getEncryptedBallots = async (_: any, __: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
@@ -53,14 +56,14 @@ const submitBallot = async (
         studentNumber: number;
         encryptedBallot: string;
     },
-    contextValue: MyContext
+    contextValue: MyContext,
 ) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
 
     // Confirm voting is open
-    const { isOpen: votingIsOpen } = await contextValue.dataSources.config.get()
+    const { isOpen: votingIsOpen } = await contextValue.dataSources.config.get();
     if (!votingIsOpen) {
         throw new GraphQLError("Voting is not open", {
             extensions: {
@@ -71,11 +74,10 @@ const submitBallot = async (
     }
 
     // Make sure student hasn't voted yet
-    const votingStatus =
-        await contextValue.dataSources.votingStatuses.getVotingStatusByStudentNumber(
-            args.studentNumber
-        );
-    
+    const votingStatus = await contextValue.dataSources.votingStatuses.getVotingStatusByStudentNumber(
+        args.studentNumber,
+    );
+
     if (votingStatus === null) {
         throw new GraphQLError("Student number is not valid", {
             extensions: {
@@ -104,15 +106,10 @@ const submitBallot = async (
     }
 
     // Submit ballot
-    await contextValue.dataSources.encryptedBallots.submitBallot(
-        args.encryptedBallot
-    );
+    await contextValue.dataSources.encryptedBallots.submitBallot(args.encryptedBallot);
 
     // Update voting status
-    await contextValue.dataSources.votingStatuses.updateVotingStatus(
-        args.studentNumber,
-        true
-    );
+    await contextValue.dataSources.votingStatuses.updateVotingStatus(args.studentNumber, true);
 
     return null;
 };
@@ -123,7 +120,7 @@ const addDecryptedBallot = async (
         encryptedBallotId: string;
         selectedChoices: SelectedOption[];
     },
-    contextValue: MyContext
+    contextValue: MyContext,
 ) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
@@ -131,7 +128,7 @@ const addDecryptedBallot = async (
     validateIfAdmin(contextValue.authTokenDecoded);
 
     // Confirm voting is closed
-    const { isOpen: votingIsOpen } = await contextValue.dataSources.config.get()
+    const { isOpen: votingIsOpen } = await contextValue.dataSources.config.get();
     if (votingIsOpen) {
         throw new GraphQLError("Voting is open, must be closed before decryption", {
             extensions: {
@@ -144,7 +141,7 @@ const addDecryptedBallot = async (
     // Add ballot
     await contextValue.dataSources.decryptedBallots.addDecryptedBallot(
         new Types.ObjectId(args.encryptedBallotId),
-        args.selectedChoices
+        args.selectedChoices,
     );
 
     return null;
@@ -156,9 +153,9 @@ const saveDecryptedBallots = async (
         newDecryptedBallots: {
             encryptedBallotId: string;
             selectedChoices: SelectedOption[];
-        }[]
+        }[];
     },
-    contextValue: MyContext
+    contextValue: MyContext,
 ) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
@@ -166,7 +163,7 @@ const saveDecryptedBallots = async (
     validateIfAdmin(contextValue.authTokenDecoded);
 
     // Confirm voting is closed
-    const { isOpen: votingIsOpen } = await contextValue.dataSources.config.get()
+    const { isOpen: votingIsOpen } = await contextValue.dataSources.config.get();
     if (votingIsOpen) {
         throw new GraphQLError("Voting is open, must be closed before decryption", {
             extensions: {
@@ -177,56 +174,69 @@ const saveDecryptedBallots = async (
     }
 
     // Save all of the decrypted ballots to DB
-    const decryptedBallotsInfo = await Promise.all(args.newDecryptedBallots.map(async ballot => {
-        try {
-            // Check whether encrypted ballot ID actually exists
-            const encryptedBallotId = new Types.ObjectId(ballot.encryptedBallotId);
-            const encryptedBallot = await contextValue.dataSources.encryptedBallots.findOneById(ballot.encryptedBallotId);
-            if (encryptedBallot === null) {
-                throw "Encrypted ballot ID does not exist";
+    const decryptedBallotsInfo = await Promise.all(
+        args.newDecryptedBallots.map(async (ballot) => {
+            try {
+                // Check whether encrypted ballot ID actually exists
+                const encryptedBallotId = new Types.ObjectId(ballot.encryptedBallotId);
+                const encryptedBallot = await contextValue.dataSources.encryptedBallots.findOneById(
+                    ballot.encryptedBallotId,
+                );
+                if (encryptedBallot === null) {
+                    throw "Encrypted ballot ID does not exist";
+                }
+
+                // Add a new ballot, or update one that may already reference an encrypted ballot
+                const res = await contextValue.dataSources.decryptedBallots.addOrUpdateDecryptedBallot(
+                    encryptedBallotId,
+                    ballot.selectedChoices,
+                );
+                return {
+                    decryptedId: String(res.id),
+                    ballot,
+                };
+            } catch (e) {
+                console.error("Error while decrypting ballot:", e, "Ballot:", ballot);
+                return null;
             }
+        }),
+    );
 
-            // Add a new ballot, or update one that may already reference an encrypted ballot
-            const res = await contextValue.dataSources.decryptedBallots.addOrUpdateDecryptedBallot(encryptedBallotId, ballot.selectedChoices);
-            return {
-                decryptedId: String(res.id),
-                ballot
-            };
-        } catch (e) {
-            console.error("Error while decrypting ballot:", e, "Ballot:", ballot)
-            return null;
-        }
-    }));
-
-    const failedSavesCount = decryptedBallotsInfo.filter(info => info === null).length;
+    const failedSavesCount = decryptedBallotsInfo.filter((info) => info === null).length;
     console.log(`${failedSavesCount}/${decryptedBallotsInfo.length} failed saving, counting all that were saved`);
 
     // Aggregate all of the data by position and candidate
-    const positions = await contextValue.dataSources.positions.getPositions() as PositionDocument[];
-    const candidates = await contextValue.dataSources.candidates.getCandidates() as CandidateDocument[];
+    const positions = (await contextValue.dataSources.positions.getPositions()) as PositionDocument[];
+    const candidates = (await contextValue.dataSources.candidates.getCandidates()) as CandidateDocument[];
 
     // Basically need to make an object where the key is the position ID, and the value is another object
     // That object has the candidate ID as a key and the count as the value
     // No keys are allowed to be added later on to prevent malicious actor from messing with backend and voting for
     // a person who isn't even running for a certain position
-    const aggregatedData = positions.reduce((acc, position) => {
-        acc[position.id] = candidates.reduce((acc, candidate) => {
-            if (candidate.position.toString() === position._id.toString()) acc[candidate.id] = 0;
+    const aggregatedData = positions.reduce(
+        (acc, position) => {
+            acc[position.id] = candidates.reduce(
+                (acc, candidate) => {
+                    if (candidate.position.toString() === position._id.toString()) acc[candidate.id] = 0;
+                    return acc;
+                },
+                {} as { [key: string]: any },
+            );
             return acc;
-        }, {} as {[key: string]: any});
-        return acc;
-    }, {} as {[key: string]: any});
+        },
+        {} as { [key: string]: any },
+    );
 
     // Now actually aggregate everything
-    const successfulDecryptedBallots = decryptedBallotsInfo.filter(info => info !== null) as {
+    const successfulDecryptedBallots = decryptedBallotsInfo.filter((info) => info !== null) as {
         decryptedId: string;
         ballot: {
             encryptedBallotId: string;
             selectedChoices: SelectedOption[];
-        }
+        };
     }[];
-    successfulDecryptedBallots.forEach(info => {
-        info.ballot.selectedChoices.forEach(choice => {
+    successfulDecryptedBallots.forEach((info) => {
+        info.ballot.selectedChoices.forEach((choice) => {
             // Confirm if position and candidate IDs are valid
             const positionId = choice.position.toString();
             if (!(positionId in aggregatedData)) {
@@ -234,39 +244,42 @@ const saveDecryptedBallots = async (
                 return;
             }
 
-            choice.
-                candidates.
+            choice.candidates
                 // Just take the first few that fall under the spots available, nothing else matters
-                slice(0, positions.filter(pos => pos.id === positionId)[0].spotsAvailable).
-                forEach(candidateId => {
-                    console.log(positionId, candidateId)
+                .slice(0, positions.filter((pos) => pos.id === positionId)[0].spotsAvailable)
+                .forEach((candidateId) => {
+                    console.log(positionId, candidateId);
                     if (!(candidateId.toString() in aggregatedData[positionId])) {
-                        console.error("Given candidate cannot be found for given position", positionId, candidateId.toString());
+                        console.error(
+                            "Given candidate cannot be found for given position",
+                            positionId,
+                            candidateId.toString(),
+                        );
                     } else {
                         aggregatedData[positionId][candidateId.toString()]++;
                     }
-            })
+                });
         });
     });
 
-    console.log("Results:", aggregatedData)
+    console.log("Results:", aggregatedData);
 
     // Convert to Results schema and then save
-    const convertedPositionsData = Object.keys(aggregatedData).map(positionId => {
-        const candidates = Object.keys(aggregatedData[positionId]).map(candidateId => ({
+    const convertedPositionsData = Object.keys(aggregatedData).map((positionId) => {
+        const candidates = Object.keys(aggregatedData[positionId]).map((candidateId) => ({
             candidate: new Types.ObjectId(candidateId),
-            votes: aggregatedData[positionId][candidateId]
+            votes: aggregatedData[positionId][candidateId],
         }));
 
         return {
             position: new Types.ObjectId(positionId),
-            candidates
+            candidates,
         };
     });
 
     const results: ResultsDocument = new Results({
         positions: convertedPositionsData,
-        timestamp: Math.floor(Date.now() / 1000)
+        timestamp: Math.floor(Date.now() / 1000),
     });
     await results.save();
 
@@ -292,7 +305,7 @@ const deleteBallots = async (_: any, __: any, contextValue: MyContext) => {
     }
 
     // Confirm voting is closed
-    const { isOpen: votingIsOpen } = await contextValue.dataSources.config.get()
+    const { isOpen: votingIsOpen } = await contextValue.dataSources.config.get();
     if (votingIsOpen) {
         throw new GraphQLError("Voting is open, must be closed to delete ballots", {
             extensions: {

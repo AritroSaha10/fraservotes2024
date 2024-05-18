@@ -1,9 +1,11 @@
-import { GraphQLError } from "graphql";
-import type { MyContext } from "src";
 import { getAuth } from "firebase-admin/auth";
-import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
-import { validateIfAdmin } from "src/util/checkIfAdmin";
+
+import { GraphQLError } from "graphql";
 import { ObjectId } from "mongodb";
+import type { MyContext } from "src";
+
+import { validateIfAdmin } from "src/util/checkIfAdmin";
+import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
 
 const getAllResultsResolver = async (_: any, __: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
@@ -12,7 +14,7 @@ const getAllResultsResolver = async (_: any, __: any, contextValue: MyContext) =
     validateIfAdmin(contextValue.authTokenDecoded);
 
     return contextValue.dataSources.results.getAllResults();
-}
+};
 
 const getResultResolver = async (_: any, args: { id: string }, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
@@ -22,9 +24,9 @@ const getResultResolver = async (_: any, args: { id: string }, contextValue: MyC
     if (args.id !== null && args.id !== undefined) {
         return contextValue.dataSources.results.getResult(ObjectId.createFromHexString(args.id));
     } else {
-        throw new GraphQLError('ID must be provided', {
+        throw new GraphQLError("ID must be provided", {
             extensions: {
-                code: 'BAD_REQUEST',
+                code: "BAD_REQUEST",
                 http: { status: 400 },
             },
         });
@@ -51,6 +53,6 @@ const deleteAllResultsResolver = async (_: any, __: any, contextValue: MyContext
 
     await contextValue.dataSources.results.deleteAllResults();
     return null;
-}
+};
 
 export { getAllResultsResolver, getResultResolver, deleteAllResultsResolver };

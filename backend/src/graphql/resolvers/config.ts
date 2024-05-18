@@ -1,9 +1,12 @@
-import type { MyContext } from "src/";
 import { getAuth } from "firebase-admin/auth";
-import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
-import { validateIfAdmin } from "src/util/checkIfAdmin";
-import type { ConfigDocument } from "src/models/config";
+
 import { GraphQLError } from "graphql";
+import type { MyContext } from "src/";
+
+import type { ConfigDocument } from "src/models/config";
+
+import { validateIfAdmin } from "src/util/checkIfAdmin";
+import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
 
 interface ConfigInput {
     isOpen: boolean | null | undefined;
@@ -48,4 +51,3 @@ const updateConfig = async (_: any, args: { newConfig: ConfigInput }, contextVal
 };
 
 export { getConfigResolver, updateConfig };
-

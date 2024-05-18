@@ -1,4 +1,4 @@
-import { cert } from 'firebase-admin/app';
+import { cert } from "firebase-admin/app";
 
 /**
  * Creates a service account and returns it to the user.

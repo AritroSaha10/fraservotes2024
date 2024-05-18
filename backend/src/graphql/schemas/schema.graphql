@@ -1,6 +1,6 @@
 schema {
-  query: Query
-  mutation: Mutation # Uncomment once you have mutations
+    query: Query
+    mutation: Mutation # Uncomment once you have mutations
 }
 
 type Query
@@ -9,5 +9,5 @@ type Mutation
 
 # TODO: Maybe import a scalar or create a custom one for a void type
 type Void {
-  void: Boolean
+    void: Boolean
 }
