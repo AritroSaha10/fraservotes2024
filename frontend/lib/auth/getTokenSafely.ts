@@ -23,7 +23,7 @@ export default async function getTokenSafely() {
     let token: string;
     console.time(`token ready (req id ${log_id})`);
     // Refresh token for admin routes if more than 5 minutes old
-    const tokenDecoded = await user.getIdTokenResult();
+    const tokenDecoded = await user.getIdTokenResult(true);
     const tokenAge = Date.now() - new Date(tokenDecoded.issuedAtTime).getTime();
     if (tokenAge > 5 * 60 * 1000) {
         token = await user.getIdToken(true);
