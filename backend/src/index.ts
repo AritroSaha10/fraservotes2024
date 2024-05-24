@@ -36,6 +36,8 @@ import ResultsDataSource from './graphql/datasources/results.js'
 import Config from './models/config.js';
 import Results from './models/results.js';
 
+import morgan from 'morgan';
+
 export interface MyContext {
     authTokenDecoded: DecodedIdToken,
     authTokenRaw: string,
@@ -86,6 +88,7 @@ const server = new ApolloServer<MyContext>({
     introspection: process.env.NODE_ENV !== 'production'
 });
 await server.start();
+app.use(morgan(':date[iso] :remote-addr :method :url :status :res[content-length] - :response-time ms'));
 app.use(
     '/graphql',
     cors(),

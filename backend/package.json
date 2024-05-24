@@ -24,9 +24,11 @@
     "graphql-tag": "^2.12.6",
     "mongodb": "^6.5.0",
     "mongoose": "^8.3.3",
+    "morgan": "^1.10.0",
     "openpgp": "^5.11.1"
   },
   "devDependencies": {
+    "@types/morgan": "^1.9.9",
     "@types/node": "^20.12.11",
     "copyfiles": "^2.4.1",
     "nodemon": "^3.1.0",
