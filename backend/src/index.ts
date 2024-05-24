@@ -88,6 +88,7 @@ const server = new ApolloServer<MyContext>({
     introspection: process.env.NODE_ENV !== 'production'
 });
 await server.start();
+app.enable("trust proxy");
 app.use(morgan(':date[iso] :remote-addr :method :url :status :res[content-length] - :response-time ms'));
 app.use(
     '/graphql',
