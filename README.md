@@ -1,3 +1,7 @@
-Get started by customizing your environment (defined in the .idx/dev.nix file) with the tools and IDE extensions you'll need for your project!
+# FraserVotes 2024
+The online voting platform used for John Fraser S.S.'s SAC elections for the 2024-2025 school year. This website is intended to be used on a "kiosk" device in a voting station, substituting a regular ballot.
 
-Learn more at https://developers.google.com/idx/guides/customize-idx-env
+# Key Points
+- PGP encryption for all ballots
+- Local decryption of ballots to ensure your private key stays on your computer, while still maintaining speed of online voting
+- Stack: React/Next.js, Bun, MongoDB, GraphQL/Apollo Server, Firebase Authentication
