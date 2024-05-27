@@ -41,6 +41,8 @@ import createServiceAccount from "./util/createServiceAccount";
 
 import { hello } from "./routes/hello";
 
+import morgan from 'morgan';
+
 export interface MyContext {
     authTokenDecoded: DecodedIdToken;
     authTokenRaw: string;
@@ -94,6 +96,8 @@ const server = new ApolloServer<MyContext>({
     introspection: process.env.NODE_ENV !== "production",
 });
 await server.start();
+app.enable("trust proxy");
+app.use(morgan(':date[iso] :remote-addr :method :url :status :res[content-length] - :response-time ms'));
 app.use(
     "/graphql",
     cors(),

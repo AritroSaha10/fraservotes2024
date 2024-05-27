@@ -7,7 +7,7 @@ import { cert } from "firebase-admin/app";
 export default function createServiceAccount() {
     return cert({
         projectId: process.env.GCP_PROJECT_ID,
-        privateKey: process.env.GCP_PRIVATE_KEY,
+        privateKey: process.env.GCP_PRIVATE_KEY.replace(/\\n/g, '\n'),
         clientEmail: process.env.GCP_CLIENT_EMAIL,
     });
 }
