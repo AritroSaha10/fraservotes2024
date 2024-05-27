@@ -1,0 +1,25 @@
+{
+    "plugins": ["@trivago/prettier-plugin-sort-imports"],
+    "trailingComma": "all",
+    "tabWidth": 4,
+    "semi": true,
+    "singleQuote": false,
+    "bracketSpacing": true,
+    "printWidth": 120,
+    "importOrder": [
+        "@apollo",
+        "firebase-admin",
+        "<THIRD_PARTY_MODULES>",
+        "graphql/datasources",
+        "graphql/resolvers",
+        "graphql/schemas",
+        "models",
+        "util",
+        "routes",
+        ".svg",
+        ".css",
+        "^../(.*)$"
+    ],
+    "importOrderSeparation": true,
+    "singleAttributePerLine": true
+}

@@ -1,4 +1,5 @@
-import { Document, Schema, model, ObjectId } from 'mongoose';
+import { Document, Schema, model } from "mongoose";
+import type { ObjectId } from "mongoose";
 
 // ResultCandidate interface
 export interface ResultCandidateDocument extends Document {
@@ -19,24 +20,30 @@ export interface ResultsDocument extends Document {
 }
 
 // ResultCandidate Schema
-const resultCandidateSchema = new Schema<ResultCandidateDocument>({
-    candidate: { type: Schema.Types.ObjectId, ref: 'Candidate', required: true },
-    votes: { type: Number, required: true, default: 0 }
-}, { _id: false });
+const resultCandidateSchema = new Schema<ResultCandidateDocument>(
+    {
+        candidate: { type: Schema.Types.ObjectId, ref: "Candidate", required: true },
+        votes: { type: Number, required: true, default: 0 },
+    },
+    { _id: false },
+);
 
 // ResultPosition Schema
-const resultPositionSchema = new Schema<ResultPositionDocument>({
-    position: { type: Schema.Types.ObjectId, ref: 'Position', required: true },
-    candidates: [resultCandidateSchema]
-}, { _id: false });
+const resultPositionSchema = new Schema<ResultPositionDocument>(
+    {
+        position: { type: Schema.Types.ObjectId, ref: "Position", required: true },
+        candidates: [resultCandidateSchema],
+    },
+    { _id: false },
+);
 
 // Results Schema
 const resultsSchema = new Schema<ResultsDocument>({
     positions: [resultPositionSchema],
-    timestamp: { type: Number, required: true }
+    timestamp: { type: Number, required: true },
 });
 
 // Results Model
-const Results = model<ResultsDocument>('Results', resultsSchema);
+const Results = model<ResultsDocument>("Results", resultsSchema);
 
 export default Results;

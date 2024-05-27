@@ -1,20 +1,22 @@
-import { GraphQLError } from "graphql";
-import { MyContext } from "../..";
 import { getAuth } from "firebase-admin/auth";
-import validateTokenForSensitiveRoutes from "../../util/validateTokenForSensitiveRoutes.js";
-import { validateIfAdmin } from "../../util/checkIfAdmin.js";
-import { ObjectId } from "mongodb";
 
-const getAllResultsResolver = async (_, __, contextValue: MyContext) => {
+import { GraphQLError } from "graphql";
+import { ObjectId } from "mongodb";
+import type { MyContext } from "src";
+
+import { validateIfAdmin } from "src/util/checkIfAdmin";
+import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
+
+const getAllResultsResolver = async (_: any, __: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
     validateIfAdmin(contextValue.authTokenDecoded);
 
     return contextValue.dataSources.results.getAllResults();
-}
+};
 
-const getResultResolver = async (_, args: { id: string }, contextValue: MyContext) => {
+const getResultResolver = async (_: any, args: { id: string }, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -22,16 +24,16 @@ const getResultResolver = async (_, args: { id: string }, contextValue: MyContex
     if (args.id !== null && args.id !== undefined) {
         return contextValue.dataSources.results.getResult(ObjectId.createFromHexString(args.id));
     } else {
-        throw new GraphQLError('ID must be provided', {
+        throw new GraphQLError("ID must be provided", {
             extensions: {
-                code: 'BAD_REQUEST',
+                code: "BAD_REQUEST",
                 http: { status: 400 },
             },
         });
     }
 };
 
-const deleteAllResultsResolver = async (_, __, contextValue: MyContext) => {
+const deleteAllResultsResolver = async (_: any, __: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -40,7 +42,7 @@ const deleteAllResultsResolver = async (_, __, contextValue: MyContext) => {
     // Double-check if user is actually admin, since this is quite destructive
     const uid = contextValue.authTokenDecoded.uid;
     const { customClaims } = await auth.getUser(uid);
-    if (!("admin" in customClaims && customClaims.admin === true)) {
+    if (!(customClaims !== undefined && "admin" in customClaims && customClaims.admin === true)) {
         throw new GraphQLError("Not sufficient permissions", {
             extensions: {
                 code: "FORBIDDEN",
@@ -51,6 +53,6 @@ const deleteAllResultsResolver = async (_, __, contextValue: MyContext) => {
 
     await contextValue.dataSources.results.deleteAllResults();
     return null;
-}
+};
 
 export { getAllResultsResolver, getResultResolver, deleteAllResultsResolver };

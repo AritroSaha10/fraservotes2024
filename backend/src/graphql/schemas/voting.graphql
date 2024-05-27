@@ -1,40 +1,40 @@
 extend type Query {
-  encryptedBallots: [EncryptedBallot!]!
-  decryptedBallots: [DecryptedBallot!]!
-  encryptedBallotCount: Int!
-  decryptedBallotCount: Int!
+    encryptedBallots: [EncryptedBallot!]!
+    decryptedBallots: [DecryptedBallot!]!
+    encryptedBallotCount: Int!
+    decryptedBallotCount: Int!
 }
 
 extend type Mutation {
-  submitBallot(studentNumber: Int!, encryptedBallot: String!): Void
-  addDecryptedBallot(encryptedBallotId: ID!, selectedChoices: [SelectedBallotOptionInput]!): Void
-  saveDecryptedBallots(newDecryptedBallots: [DecryptedBallotInput]!): ID!
-  deleteBallots: Void
+    submitBallot(studentNumber: Int!, encryptedBallot: String!): Void
+    addDecryptedBallot(encryptedBallotId: ID!, selectedChoices: [SelectedBallotOptionInput]!): Void
+    saveDecryptedBallots(newDecryptedBallots: [DecryptedBallotInput]!): ID!
+    deleteBallots: Void
 }
 
 type EncryptedBallot {
-  _id: ID!
-  timestampUTC: Int!
-  encryptedBallot: String!
+    _id: ID!
+    timestampUTC: Int!
+    encryptedBallot: String!
 }
 
 type DecryptedBallot {
-  _id: ID!
-  timestampUTC: Int!
-  selectedOptions: [SelectedBallotOption!]!
+    _id: ID!
+    timestampUTC: Int!
+    selectedOptions: [SelectedBallotOption!]!
 }
 
 input SelectedBallotOptionInput {
-  position: ID!
-  candidates: [ID!]!
+    position: ID!
+    candidates: [ID!]!
 }
 
 type SelectedBallotOption {
-  position: Position!
-  candidates: [Candidate!]!
+    position: Position!
+    candidates: [Candidate!]!
 }
 
 input DecryptedBallotInput {
-  encryptedBallotId: ID!
-  selectedChoices: [SelectedBallotOptionInput!]!
+    encryptedBallotId: ID!
+    selectedChoices: [SelectedBallotOptionInput!]!
 }

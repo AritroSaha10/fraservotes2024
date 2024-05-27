@@ -1,4 +1,5 @@
 import type { DecodedIdToken } from "firebase-admin/auth";
+
 import { GraphQLError } from "graphql";
 
 /**
@@ -16,9 +17,9 @@ export default function checkIfAdmin(decodedToken: DecodedIdToken) {
  */
 export function validateIfAdmin(decodedToken: DecodedIdToken) {
     if (!checkIfAdmin(decodedToken)) {
-        throw new GraphQLError('Not sufficient permissions', {
+        throw new GraphQLError("Not sufficient permissions", {
             extensions: {
-                code: 'FORBIDDEN',
+                code: "FORBIDDEN",
                 http: { status: 403 },
             },
         });

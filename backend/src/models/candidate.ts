@@ -1,13 +1,14 @@
-import { Document, Schema, model, ObjectId } from 'mongoose';
+import { Document, Schema, model } from "mongoose";
+import type { ObjectId } from "mongoose";
 
 // Candidate interface
 export interface CandidateDocument extends Document {
-    fullName: string
-    position: ObjectId
-    biography: string
-    grade: number
-    picture: string
-    campaignVideo: string
+    fullName: string;
+    position: ObjectId;
+    biography: string;
+    grade: number;
+    picture: string;
+    campaignVideo: string;
 }
 
 // Candidate Schema
@@ -21,6 +22,6 @@ const candidateSchema = new Schema<CandidateDocument>({
 });
 
 // Candidate Model
-const Candidate = model<CandidateDocument>('Candidate', candidateSchema);
+const Candidate = model<CandidateDocument>("Candidate", candidateSchema);
 
 export default Candidate;

@@ -1,26 +1,17 @@
-import { MongoDataSource } from 'apollo-datasource-mongodb'
-import { ObjectId } from 'mongodb'
-import { GraphQLError } from 'graphql';
-import { PositionDocument } from './positions';
+import { MongoDataSource } from "apollo-datasource-mongodb";
+import { GraphQLError } from "graphql";
+import { ObjectId } from "mongodb";
 
-interface Candidate {
-    _id: ObjectId
-    fullName: string
-    position: PositionDocument
-    biography: string
-    grade: number
-    picture: string
-    campaignVideo: string
-}
+import type { CandidateDocument } from "src/models/candidate";
 
-export default class Candidates extends MongoDataSource<Candidate> {
+export default class Candidates extends MongoDataSource<CandidateDocument> {
     async getCandidate(id: ObjectId | string) {
         const data = await this.findOneById(id);
         if (data === null || data === undefined) {
-            throw new GraphQLError('No candidate exists with the given ID.', {
+            throw new GraphQLError("No candidate exists with the given ID.", {
                 extensions: {
-                    code: 'NOT_FOUND',
-                    http: { status: 404 }
+                    code: "NOT_FOUND",
+                    http: { status: 404 },
                 },
             });
         }
@@ -29,7 +20,6 @@ export default class Candidates extends MongoDataSource<Candidate> {
     }
 
     getCandidates() {
-        // @ts-ignore
-        return this.model!.find().exec()
+        return this.model!.find().exec();
     }
 }

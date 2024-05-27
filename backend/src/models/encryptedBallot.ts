@@ -1,4 +1,4 @@
-import { Document, Schema, model } from 'mongoose';
+import { Document, Schema, model } from "mongoose";
 
 // Ballot interface
 export interface EncryptedBallotDocument extends Document {
@@ -13,6 +13,6 @@ const encryptedBallotSchema = new Schema<EncryptedBallotDocument>({
 });
 
 // Encrypted Ballot Model
-const EncryptedBallot = model<EncryptedBallotDocument>('Encrypted Ballot', encryptedBallotSchema);
+const EncryptedBallot = model<EncryptedBallotDocument>("Encrypted Ballot", encryptedBallotSchema);
 
 export default EncryptedBallot;

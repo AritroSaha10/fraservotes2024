@@ -1,17 +1,17 @@
 extend type Query {
-  config: Config!
+    config: Config!
 }
 
 extend type Mutation {
-  updateConfig(newConfig: ConfigInput!): Config!
+    updateConfig(newConfig: ConfigInput!): Config!
 }
 
 type Config {
-  isOpen: Boolean!
-  publicKey: String
+    isOpen: Boolean!
+    publicKey: String
 }
 
 input ConfigInput {
-  isOpen: Boolean
-  publicKey: String
+    isOpen: Boolean
+    publicKey: String
 }

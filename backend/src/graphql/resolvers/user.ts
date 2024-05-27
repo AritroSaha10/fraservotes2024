@@ -1,26 +1,28 @@
-import { GraphQLError } from "graphql";
-import { MyContext } from "../..";
 import { getAuth } from "firebase-admin/auth";
-import validateTokenForSensitiveRoutes from "../../util/validateTokenForSensitiveRoutes.js";
-import checkIfAdmin, { validateIfAdmin } from "../../util/checkIfAdmin.js";
 
-const getUsersResolver = async (_, __, contextValue: MyContext) => {
+import { GraphQLError } from "graphql";
+import type { MyContext } from "src/";
+
+import checkIfAdmin, { validateIfAdmin } from "src/util/checkIfAdmin";
+import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
+
+const getUsersResolver = async (_: any, __: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
     validateIfAdmin(contextValue.authTokenDecoded);
 
     return contextValue.dataSources.users.getUsers();
-}
+};
 
-const getUserResolver = async (_, args, contextValue: MyContext) => {
+const getUserResolver = async (_: any, args: any, contextValue: MyContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
     if (!(checkIfAdmin(contextValue.authTokenDecoded) || contextValue.authTokenDecoded.uid === args.uid)) {
-        throw new GraphQLError('Not sufficient permissions', {
+        throw new GraphQLError("Not sufficient permissions", {
             extensions: {
-                code: 'FORBIDDEN',
+                code: "FORBIDDEN",
                 http: { status: 403 },
             },
         });

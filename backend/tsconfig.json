@@ -1,23 +1,34 @@
 {
-    "include": [
-        "src/**/*",
-        "src/graphql/schemas/*.graphql"
-    ],
+    "include": ["src/**/*", "src/graphql/schemas/*.graphql"],
     "compilerOptions": {
-        "rootDirs": [
-            "src"
-        ],
-        "outDir": "dist",
-        "lib": [
-            "es2020"
-        ],
-        "target": "es2020",
-        "module": "esnext",
-        "moduleResolution": "node",
-        "esModuleInterop": true,
-        "types": [
-            "node"
-        ],
-        "typeRoots": ["./node_modules/@types"]
+        "lib": ["ESNext"],
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleDetection": "force",
+        "types": ["bun-types"],
+
+        "moduleResolution": "Bundler",
+        "allowImportingTsExtensions": true,
+        "verbatimModuleSyntax": true,
+        "noEmit": true,
+
+        "strict": true,
+        "skipLibCheck": true,
+        "noFallthroughCasesInSwitch": true,
+
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noPropertyAccessFromIndexSignature": false,
+
+        "baseUrl": ".",
+        "paths": {
+            "@datasources/*": ["src/graphql/datasources/*"],
+            "@resolvers/*": ["src/graphql/resolvers/*"],
+            "@schemas/*": ["src/graphql/schemas/*"],
+            "@models/*": ["src/models/*"],
+            "@routes/*": ["src/routes/*"],
+            "@scripts/*": ["src/scripts/*"],
+            "@util/*": ["src/util/*"]
+        }
     }
 }
