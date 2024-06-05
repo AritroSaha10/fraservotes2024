@@ -22,10 +22,9 @@ const FirebaseAuthProvider: React.FC<Props> = ({ children }: Props) => {
         const unsubscribe = onAuthStateChanged(auth, (newUser) => {
             // Only allow people to join with student accounts
             if (newUser !== null && !newUser?.email?.includes("@pdsb.net")) {
-                // TODO: Commented out for now for debugging w/ other accounts, uncomment near production
-                // newUser.delete().then(() => {
-                //     alert("Please sign in with your student account (@pdsb.net). You have automatically been signed out.");
-                // })
+                newUser.delete().then(() => {
+                    alert("Please sign in with your student account (@pdsb.net). You have automatically been signed out.");
+                })
                 return;
             }
 
