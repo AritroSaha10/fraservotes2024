@@ -65,7 +65,7 @@ export default function CheckInSection({
                 variant="h1"
                 color="red"
             >
-                Something went wrong :&#41;
+                Something went wrong :&#40;
             </Typography>
         );
     }
