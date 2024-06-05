@@ -20,6 +20,6 @@ export default class Positions extends MongoDataSource<PositionDocument> {
     }
 
     getPositions() {
-        return this.model!.find().exec();
+        return this.model.find().exec();
     }
 }

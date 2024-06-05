@@ -20,6 +20,6 @@ export default class Candidates extends MongoDataSource<CandidateDocument> {
     }
 
     getCandidates() {
-        return this.model!.find().exec();
+        return this.model.find().exec();
     }
 }
