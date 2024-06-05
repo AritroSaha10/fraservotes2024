@@ -4,8 +4,8 @@ import { GraphQLError } from "graphql";
 import { ObjectId } from "mongodb";
 
 import type ApolloGQLContext from "@util/apolloGQLContext";
-import { validateIfAdmin } from "src/util/checkIfAdmin";
-import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
+import { validateIfAdmin } from "@util/checkIfAdmin";
+import validateTokenForSensitiveRoutes from "@util/validateTokenForSensitiveRoutes";
 
 interface VotingStatusFilter {
     _id: string;

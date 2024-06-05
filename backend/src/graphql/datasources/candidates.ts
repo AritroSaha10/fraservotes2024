@@ -2,7 +2,7 @@ import { MongoDataSource } from "apollo-datasource-mongodb";
 import { GraphQLError } from "graphql";
 import { ObjectId } from "mongodb";
 
-import type { CandidateDocument } from "src/models/candidate";
+import type { CandidateDocument } from "@models/candidate";
 
 export default class Candidates extends MongoDataSource<CandidateDocument> {
     async getCandidate(id: ObjectId | string) {

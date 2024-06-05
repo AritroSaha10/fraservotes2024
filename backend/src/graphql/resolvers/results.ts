@@ -4,8 +4,8 @@ import { GraphQLError } from "graphql";
 import { ObjectId } from "mongodb";
 
 import type ApolloGQLContext from "@util/apolloGQLContext";
-import { validateIfAdmin } from "src/util/checkIfAdmin";
-import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
+import { validateIfAdmin } from "@util/checkIfAdmin";
+import validateTokenForSensitiveRoutes from "@util/validateTokenForSensitiveRoutes";
 
 const getAllResultsResolver = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized

@@ -3,8 +3,8 @@ import { getAuth } from "firebase-admin/auth";
 import { GraphQLError } from "graphql";
 
 import type ApolloGQLContext from "@util/apolloGQLContext";
-import checkIfAdmin, { validateIfAdmin } from "src/util/checkIfAdmin";
-import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
+import checkIfAdmin, { validateIfAdmin } from "@util/checkIfAdmin";
+import validateTokenForSensitiveRoutes from "@util/validateTokenForSensitiveRoutes";
 
 const getUsersResolver = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized

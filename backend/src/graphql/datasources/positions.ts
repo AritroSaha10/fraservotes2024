@@ -2,7 +2,7 @@ import { MongoDataSource } from "apollo-datasource-mongodb";
 import { GraphQLError } from "graphql";
 import { ObjectId } from "mongodb";
 
-import type { PositionDocument } from "src/models/position";
+import type { PositionDocument } from "@models/position";
 
 export default class Positions extends MongoDataSource<PositionDocument> {
     async getPosition(id: ObjectId | string) {

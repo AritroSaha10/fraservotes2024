@@ -1,6 +1,6 @@
 import { MongoDataSource } from "apollo-datasource-mongodb";
 
-import type { EncryptedBallotDocument } from "src/models/encryptedBallot";
+import type { EncryptedBallotDocument } from "@models/encryptedBallot";
 
 export default class EncryptedBallots extends MongoDataSource<EncryptedBallotDocument> {
     submitBallot(encryptedBallot: string) {

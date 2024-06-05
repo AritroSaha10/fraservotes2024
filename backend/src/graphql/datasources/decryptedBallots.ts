@@ -1,7 +1,7 @@
 import { MongoDataSource } from "apollo-datasource-mongodb";
 import { ObjectId } from "mongodb";
 
-import type { DecryptedBallotDocument, SelectedOption } from "src/models/decryptedBallot";
+import type { DecryptedBallotDocument, SelectedOption } from "@models/decryptedBallot";
 
 export default class DecryptedBallots extends MongoDataSource<DecryptedBallotDocument> {
     addDecryptedBallot(encryptedBallotId: ObjectId, selectedChoices: SelectedOption[]) {

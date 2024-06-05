@@ -3,16 +3,16 @@ import { getAuth } from "firebase-admin/auth";
 import { GraphQLError } from "graphql";
 import { Types } from "mongoose";
 
-import type { CandidateDocument } from "src/models/candidate";
-import type { SelectedOption } from "src/models/decryptedBallot";
-import type { PositionDocument } from "src/models/position";
-import Results from "src/models/results";
-import type { ResultsDocument } from "src/models/results";
+import type { CandidateDocument } from "@models/candidate";
+import type { SelectedOption } from "@models/decryptedBallot";
+import type { PositionDocument } from "@models/position";
+import Results from "@models/results";
+import type { ResultsDocument } from "@models/results";
 
 import type ApolloGQLContext from "@util/apolloGQLContext";
-import { validateIfAdmin } from "src/util/checkIfAdmin";
-import { isPGPEncrypted } from "src/util/isPGPEncrypted";
-import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
+import { validateIfAdmin } from "@util/checkIfAdmin";
+import { isPGPEncrypted } from "@util/isPGPEncrypted";
+import validateTokenForSensitiveRoutes from "@util/validateTokenForSensitiveRoutes";
 
 const getEncryptedBallots = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
