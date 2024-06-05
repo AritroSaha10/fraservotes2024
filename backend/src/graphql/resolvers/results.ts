@@ -2,12 +2,12 @@ import { getAuth } from "firebase-admin/auth";
 
 import { GraphQLError } from "graphql";
 import { ObjectId } from "mongodb";
-import type { MyContext } from "src";
+import type ApolloGQLContext from "@util/apolloGQLContext";
 
 import { validateIfAdmin } from "src/util/checkIfAdmin";
 import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
 
-const getAllResultsResolver = async (_: any, __: any, contextValue: MyContext) => {
+const getAllResultsResolver = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -16,7 +16,7 @@ const getAllResultsResolver = async (_: any, __: any, contextValue: MyContext) =
     return contextValue.dataSources.results.getAllResults();
 };
 
-const getResultResolver = async (_: any, args: { id: string }, contextValue: MyContext) => {
+const getResultResolver = async (_: any, args: { id: string }, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -33,7 +33,7 @@ const getResultResolver = async (_: any, args: { id: string }, contextValue: MyC
     }
 };
 
-const deleteAllResultsResolver = async (_: any, __: any, contextValue: MyContext) => {
+const deleteAllResultsResolver = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);

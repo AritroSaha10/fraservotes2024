@@ -3,7 +3,7 @@ import { getAuth } from "firebase-admin/auth";
 
 import dotenv from "dotenv";
 
-import createServiceAccount from "../util/createServiceAccount";
+import createServiceAccount from "@util/createServiceAccount";
 
 dotenv.config();
 

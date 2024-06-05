@@ -7,8 +7,6 @@ type Candidate {
     _id: ID!
     fullName: String!
     position: Position!
-    biography: String! # In markdown
     grade: Int!
     picture: String!
-    campaignVideo: String! # YouTube video ID
 }

@@ -2,7 +2,7 @@ import { getAuth } from "firebase-admin/auth";
 
 import { GraphQLError } from "graphql";
 import { Types } from "mongoose";
-import type { MyContext } from "src";
+import type ApolloGQLContext from "@util/apolloGQLContext";
 
 import type { CandidateDocument } from "src/models/candidate";
 import type { SelectedOption } from "src/models/decryptedBallot";
@@ -14,7 +14,7 @@ import { validateIfAdmin } from "src/util/checkIfAdmin";
 import { isPGPEncrypted } from "src/util/isPGPEncrypted";
 import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
 
-const getEncryptedBallots = async (_: any, __: any, contextValue: MyContext) => {
+const getEncryptedBallots = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -23,7 +23,7 @@ const getEncryptedBallots = async (_: any, __: any, contextValue: MyContext) => 
     return contextValue.dataSources.encryptedBallots.getAll();
 };
 
-const getEncryptedBallotCount = async (_: any, __: any, contextValue: MyContext) => {
+const getEncryptedBallotCount = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -32,7 +32,7 @@ const getEncryptedBallotCount = async (_: any, __: any, contextValue: MyContext)
     return contextValue.dataSources.encryptedBallots.getCount();
 };
 
-const getDecryptedBallots = async (_: any, __: any, contextValue: MyContext) => {
+const getDecryptedBallots = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -41,7 +41,7 @@ const getDecryptedBallots = async (_: any, __: any, contextValue: MyContext) => 
     return contextValue.dataSources.decryptedBallots.getAll();
 };
 
-const getDecryptedBallotCount = async (_: any, __: any, contextValue: MyContext) => {
+const getDecryptedBallotCount = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -56,7 +56,7 @@ const submitBallot = async (
         studentNumber: number;
         encryptedBallot: string;
     },
-    contextValue: MyContext,
+    contextValue: ApolloGQLContext,
 ) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
@@ -120,7 +120,7 @@ const addDecryptedBallot = async (
         encryptedBallotId: string;
         selectedChoices: SelectedOption[];
     },
-    contextValue: MyContext,
+    contextValue: ApolloGQLContext,
 ) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
@@ -155,7 +155,7 @@ const saveDecryptedBallots = async (
             selectedChoices: SelectedOption[];
         }[];
     },
-    contextValue: MyContext,
+    contextValue: ApolloGQLContext,
 ) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
@@ -286,7 +286,7 @@ const saveDecryptedBallots = async (
     return results.id;
 };
 
-const deleteBallots = async (_: any, __: any, contextValue: MyContext) => {
+const deleteBallots = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);

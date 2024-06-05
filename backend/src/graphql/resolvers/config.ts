@@ -1,21 +1,21 @@
 import { getAuth } from "firebase-admin/auth";
 
 import { GraphQLError } from "graphql";
-import type { MyContext } from "src/";
+import type ApolloGQLContext from "@util/apolloGQLContext";
 
-import type { ConfigDocument } from "src/models/config";
+import type { ConfigDocument } from "@models/config";
 
-import { validateIfAdmin } from "src/util/checkIfAdmin";
-import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
+import { validateIfAdmin } from "@util/checkIfAdmin";
+import validateTokenForSensitiveRoutes from "@util/validateTokenForSensitiveRoutes";
 
 interface ConfigInput {
     isOpen: boolean | null | undefined;
     publicKey: string | null | undefined;
 }
 
-const getConfigResolver = (_: any, __: any, contextValue: MyContext) => contextValue.dataSources.config.get();
+const getConfigResolver = (_: any, __: any, contextValue: ApolloGQLContext) => contextValue.dataSources.config.get();
 
-const updateConfig = async (_: any, args: { newConfig: ConfigInput }, contextValue: MyContext) => {
+const updateConfig = async (_: any, args: { newConfig: ConfigInput }, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);

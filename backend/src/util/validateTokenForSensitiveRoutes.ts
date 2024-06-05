@@ -1,4 +1,5 @@
-import { Auth, DecodedIdToken } from "firebase-admin/auth";
+import { Auth } from "firebase-admin/auth";
+import type { DecodedIdToken } from "firebase-admin/auth";
 
 import { GraphQLError } from "graphql";
 
@@ -12,7 +13,7 @@ export default async function validateTokenForSensitiveRoutes(auth: Auth, authTo
     let decodedToken: DecodedIdToken;
     try {
         decodedToken = await auth.verifyIdToken(authTokenRaw, true);
-    } catch (e) {
+    } catch (e: any) {
         if ("code" in e) {
             if (
                 ![

@@ -22,10 +22,10 @@ import {
     getVotingStatusesCountResolver,
     getVotingStatusesResolver,
 } from "./votingStatus";
-import type { MyContext } from "src/";
+import type ApolloGQLContext from "@util/apolloGQLContext";
 
 // Resolvers define how to fetch the types defined in your schema.
-const resolvers: GraphQLResolverMap<MyContext> = {
+const resolvers: GraphQLResolverMap<ApolloGQLContext> = {
     Query: {
         positions: getPositionsResolver,
         position: getPositionResolver,

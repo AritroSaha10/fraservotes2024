@@ -4,7 +4,7 @@ import fs from "fs";
 import mongoose from "mongoose";
 import { finished } from "stream/promises";
 
-import VotingStatus from "../models/votingStatus";
+import VotingStatus from "@models/votingStatus";
 
 const readCSV = async (filePath: string) => {
     const results: any[] = [];

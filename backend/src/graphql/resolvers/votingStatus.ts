@@ -2,7 +2,7 @@ import { getAuth } from "firebase-admin/auth";
 
 import { GraphQLError } from "graphql";
 import { ObjectId } from "mongodb";
-import type { MyContext } from "src";
+import type ApolloGQLContext from "@util/apolloGQLContext";
 
 import { validateIfAdmin } from "src/util/checkIfAdmin";
 import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
@@ -12,7 +12,7 @@ interface VotingStatusFilter {
     studentNumber: number;
 }
 
-const getVotingStatusesResolver = async (_: any, __: any, contextValue: MyContext) => {
+const getVotingStatusesResolver = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -21,7 +21,7 @@ const getVotingStatusesResolver = async (_: any, __: any, contextValue: MyContex
     return contextValue.dataSources.votingStatuses.getVotingStatuses();
 };
 
-const getVotingStatusResolver = async (_: any, args: { filter: VotingStatusFilter }, contextValue: MyContext) => {
+const getVotingStatusResolver = async (_: any, args: { filter: VotingStatusFilter }, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -45,7 +45,7 @@ const getVotingStatusResolver = async (_: any, args: { filter: VotingStatusFilte
     }
 };
 
-const getVotingStatusesCountResolver = async (_: any, __: any, contextValue: MyContext) => {
+const getVotingStatusesCountResolver = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -54,7 +54,7 @@ const getVotingStatusesCountResolver = async (_: any, __: any, contextValue: MyC
     return contextValue.dataSources.votingStatuses.getVotingStatusesCount();
 };
 
-const getCompletedVotingStatusesCountResolver = async (_: any, __: any, contextValue: MyContext) => {
+const getCompletedVotingStatusesCountResolver = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
@@ -63,7 +63,7 @@ const getCompletedVotingStatusesCountResolver = async (_: any, __: any, contextV
     return contextValue.dataSources.votingStatuses.getCompletedVotingStatusesCount();
 };
 
-const clearVotingStatusesResolver = async (_: any, __: any, contextValue: MyContext) => {
+const clearVotingStatusesResolver = async (_: any, __: any, contextValue: ApolloGQLContext) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);

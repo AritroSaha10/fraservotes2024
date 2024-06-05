@@ -13,6 +13,7 @@ import { readFileSync, readdirSync } from "fs";
 import { GraphQLError } from "graphql";
 import gql from "graphql-tag";
 import mongoose from "mongoose";
+import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -40,23 +41,7 @@ import checkIfVolunteer from "./util/checkIfVolunteer";
 import createServiceAccount from "./util/createServiceAccount";
 
 import { hello } from "./routes/hello";
-
-import morgan from 'morgan';
-
-export interface MyContext {
-    authTokenDecoded: DecodedIdToken;
-    authTokenRaw: string;
-    dataSources: {
-        positions: Positions;
-        candidates: Candidates;
-        users: Users;
-        encryptedBallots: EncryptedBallots;
-        decryptedBallots: DecryptedBallots;
-        votingStatuses: VotingStatuses;
-        config: ConfigDataSource;
-        results: ResultsDataSource;
-    };
-}
+import type ApolloGQLContext from "@util/apolloGQLContext";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -72,7 +57,7 @@ const auth = getAuth();
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
 
 // Import GraphQL type definitions
 const rawTypeDefs = readdirSync(path.join(__dirname, "./graphql/schemas"))
@@ -90,14 +75,14 @@ const rawTypeDefs = readdirSync(path.join(__dirname, "./graphql/schemas"))
 const typeDefs = gql(rawTypeDefs);
 
 // Setup Apollo GraphQL server
-const server = new ApolloServer<MyContext>({
+const server = new ApolloServer<ApolloGQLContext>({
     schema: buildSubgraphSchema([{ typeDefs, resolvers }]),
     status400ForVariableCoercionErrors: true,
     introspection: process.env.NODE_ENV !== "production",
 });
 await server.start();
 app.enable("trust proxy");
-app.use(morgan(':date[iso] :remote-addr :method :url :status :res[content-length] - :response-time ms'));
+app.use(morgan(":date[iso] :remote-addr :method :url :status :res[content-length] - :response-time ms"));
 app.use(
     "/graphql",
     cors(),
