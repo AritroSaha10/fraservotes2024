@@ -1,9 +1,7 @@
-
 import Image from "next/image";
 
-import { Typography } from "@material-tailwind/react";
-
 import Candidate from "@/types/candidate";
+import { Typography } from "@material-tailwind/react";
 
 interface CandidateCardProps {
     candidate: Candidate;

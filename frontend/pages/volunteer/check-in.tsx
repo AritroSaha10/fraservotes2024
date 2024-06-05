@@ -1,9 +1,9 @@
 import { useState } from "react";
 
+import PageStatus from "@/types/volunteer/check-in/pageStatus";
 import { gql, useQuery } from "@apollo/client";
 
 import Layout from "@/components/Layout";
-import PageStatus from "@/types/volunteer/check-in/pageStatus";
 import CheckInSection from "@/components/volunteer/check-in/CheckInSection";
 import VotingSection from "@/components/volunteer/check-in/VotingSection";
 

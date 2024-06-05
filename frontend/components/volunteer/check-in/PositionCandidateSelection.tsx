@@ -1,5 +1,5 @@
-import Candidate from "@/types/candidate";
 import CandidateCard from "./CandidateCard";
+import Candidate from "@/types/candidate";
 
 interface PositionCandidateSelectionProps {
     candidates: Candidate[];
@@ -7,7 +7,11 @@ interface PositionCandidateSelectionProps {
     onSelect: (candidate: Candidate) => void;
 }
 
-const PositionCandidateSelection: React.FC<PositionCandidateSelectionProps> = ({ candidates, selectedCandidates, onSelect }) => {
+const PositionCandidateSelection: React.FC<PositionCandidateSelectionProps> = ({
+    candidates,
+    selectedCandidates,
+    onSelect,
+}) => {
     return (
         <div className="flex gap-4 flex-wrap max-w-[75vw]">
             {candidates.map((candidate) => (

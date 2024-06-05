@@ -4,12 +4,7 @@ import Head from "next/head";
 import router from "next/router";
 
 import { Typography } from "@material-tailwind/react";
-import {
-    GoogleAuthProvider,
-    ParsedToken,
-    signInWithPopup,
-    signOut,
-} from "firebase/auth";
+import { GoogleAuthProvider, ParsedToken, signInWithPopup, signOut } from "firebase/auth";
 import GoogleButton from "react-google-button";
 
 import auth from "@/lib/firebase/auth";

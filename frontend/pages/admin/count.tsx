@@ -2,6 +2,10 @@ import { ChangeEvent, useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 
+import Config from "@/types/config";
+import DecryptedBallot from "@/types/decryptedBallot";
+import EncryptedBallot from "@/types/encryptedBallot";
+import SelectedChoice from "@/types/selectedBallotChoice";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { Button, Card, CardBody, Typography } from "@material-tailwind/react";
 import { readMessage, decrypt, readKey } from "openpgp";
@@ -11,12 +15,8 @@ import isListOfGivenType from "@/util/isListOfGivenType";
 
 import Layout from "@/components/Layout";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import Config from "@/types/config";
-import SelectedChoice from "@/types/selectedBallotChoice";
-import EncryptedBallot from "@/types/encryptedBallot";
-import DecryptedBallot from "@/types/decryptedBallot";
-import { usePrivateKey } from "@/components/admin/count/usePrivateKey";
 import PrivateKeyManagement from "@/components/admin/count/privateKeyManagement";
+import { usePrivateKey } from "@/components/admin/count/usePrivateKey";
 
 const MAIN_DATA_QUERY = gql`
     query MainData {
@@ -87,7 +87,7 @@ function BallotCountPageComponent() {
         } finally {
             setBusy(false);
         }
-    }
+    };
 
     const startBallotCount = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
@@ -312,9 +312,9 @@ function BallotCountPageComponent() {
         <>
             <Typography variant="h1">Ballot Count</Typography>
 
-            <PrivateKeyManagement 
-                privateKeyDetails={privateKeyDetails} 
-                handlePrivateKeyUploadEvent={handlePrivateKeyUploadEvent} 
+            <PrivateKeyManagement
+                privateKeyDetails={privateKeyDetails}
+                handlePrivateKeyUploadEvent={handlePrivateKeyUploadEvent}
                 passphrase={passphrase}
                 setPassphrase={setPassphrase}
                 privateKeyValid={privateKeyValid}

@@ -1,12 +1,12 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
+import PageStatus from "@/types/volunteer/check-in/pageStatus";
 import { OperationVariables, QueryResult, gql, useApolloClient } from "@apollo/client";
 import { Button, Typography } from "@material-tailwind/react";
 import Swal from "sweetalert2";
 
 import { sha256 } from "@/util/hashUsingSHA256";
 import { generateVolunteerKey, getVolunteerKeyHash } from "@/util/volunteerKey";
-import PageStatus from "@/types/volunteer/check-in/pageStatus";
 
 const votingStatusQueryOp = gql`
     query Query($filter: VotingStatusFilter!) {

@@ -3,4 +3,4 @@ enum PageStatus {
     VOTING,
 }
 
-export default PageStatus
+export default PageStatus;

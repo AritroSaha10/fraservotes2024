@@ -1,13 +1,13 @@
 import { Dispatch, SetStateAction, useState } from "react";
 
+import Candidate from "@/types/candidate";
+import Position from "@/types/position";
+import PageStatus from "@/types/volunteer/check-in/pageStatus";
 import { OperationVariables, QueryResult, gql, useApolloClient, useQuery } from "@apollo/client";
 import { Button, Typography } from "@material-tailwind/react";
 import { createMessage, encrypt, readKey } from "openpgp";
 import Swal from "sweetalert2";
 
-import Candidate from "@/types/candidate";
-import Position from "@/types/position";
-import PageStatus from "@/types/volunteer/check-in/pageStatus";
 import PositionCandidateSelection from "@/components/volunteer/check-in/PositionCandidateSelection";
 
 const candidatesQueryOp = gql`
@@ -46,7 +46,6 @@ interface VotingSectionProps {
     setStudentNumberInput: Dispatch<SetStateAction<string>>;
     configQuery: QueryResult<any, OperationVariables>;
 }
-
 
 export default function VotingSection({
     setPageStatus,

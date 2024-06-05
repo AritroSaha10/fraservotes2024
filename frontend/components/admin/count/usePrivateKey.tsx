@@ -1,7 +1,17 @@
 import { useState } from "react";
-import { PrivateKey, readPrivateKey, decryptKey, readMessage, encrypt, createMessage, decrypt, readKey, Key } from "openpgp";
-import Swal from "sweetalert2";
+
 import PrivateKeyDetails from "@/types/admin/count/privateKeyDetails";
+import {
+    PrivateKey,
+    readPrivateKey,
+    decryptKey,
+    readMessage,
+    encrypt,
+    createMessage,
+    decrypt,
+    Key,
+} from "openpgp";
+import Swal from "sweetalert2";
 
 export const usePrivateKey = () => {
     const [publicKey, setPublicKey] = useState<Key | null>(null);
