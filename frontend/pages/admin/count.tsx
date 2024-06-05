@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, memo, useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 
@@ -12,6 +12,11 @@ import isListOfGivenType from "@/util/isListOfGivenType";
 
 import Layout from "@/components/Layout";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import Config from "@/types/config";
+import SelectedChoice from "@/types/selectedBallotChoice";
+import EncryptedBallot from "@/types/encryptedBallot";
+import DecryptedBallot from "@/types/decryptedBallot";
+import PrivateKeyDetails from "@/types/admin/count/privateKeyDetails";
 
 const MAIN_DATA_QUERY = gql`
     query MainData {
@@ -39,30 +44,9 @@ const SUBMIT_DECRYPTED_BALLOTS_MUTATION = gql`
     }
 `;
 
-interface Config {
-    isOpen: boolean;
-    publicKey: string;
-}
-
 interface MainData {
     config: Config;
     encryptedBallotCount: number;
-}
-
-interface EncryptedBallot {
-    _id: string;
-    encryptedBallot: string;
-    timestampUTC: number;
-}
-
-interface SelectedChoice {
-    position: string; // ID to position
-    candidates: string[]; // IDs to candidates
-}
-
-interface DecryptedBallot {
-    encryptedBallotId: string;
-    selectedChoices: SelectedChoice[];
 }
 
 enum BallotCountStatus {
@@ -79,12 +63,7 @@ function BallotCountPageComponent() {
     const [publicKey, setPublicKey] = useState<Key | null>();
     const [encryptedPrivateKey, setEncryptedPrivateKey] = useState<PrivateKey | null>();
     const [decryptedPrivateKey, setDecryptedPrivateKey] = useState<PrivateKey | null>();
-    const [privateKeyDetails, setPrivateKeyDetails] = useState<{
-        keyID: string;
-        creationDate: string;
-        userIDs: string[];
-        fileName: string;
-    } | null>(null);
+    const [privateKeyDetails, setPrivateKeyDetails] = useState<PrivateKeyDetails | null>(null);
     const [privateKeyValid, setPrivateKeyValid] = useState(false);
 
     const [passphrase, setPassphrase] = useState<string>("");
@@ -467,7 +446,7 @@ function BallotCountPageComponent() {
     const uploadPrivateKeyButtonsDisabled =
         busy || config.isOpen || data!.encryptedBallotCount === 0 || publicKey === null;
 
-    const TextInFileUploadArea = () => {
+    const FileUploadAreaText = memo(function FileUploadAreaText({ uploadPrivateKeyButtonsDisabled, privateKeyDetails }: { uploadPrivateKeyButtonsDisabled: boolean, privateKeyDetails: PrivateKeyDetails }) {
         if (uploadPrivateKeyButtonsDisabled) {
             return (
                 <>
@@ -492,7 +471,7 @@ function BallotCountPageComponent() {
                 </>
             );
         }
-    };
+    },);
 
     const countingStatusDisplay = (() => {
         switch (ballotCountStatus) {
@@ -545,7 +524,7 @@ function BallotCountPageComponent() {
                             >
                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                     <ArrowUpTrayIcon className="w-8 h-8 mb-4 text-gray-500" />
-                                    <TextInFileUploadArea />
+                                    <FileUploadAreaText />
                                 </div>
                                 <input
                                     id="dropzone-file"
