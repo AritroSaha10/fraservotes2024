@@ -39,9 +39,9 @@ import VotingStatus from "./models/votingStatus";
 import checkIfAdmin from "./util/checkIfAdmin";
 import checkIfVolunteer from "./util/checkIfVolunteer";
 import createServiceAccount from "./util/createServiceAccount";
+import type ApolloGQLContext from "@util/apolloGQLContext";
 
 import { hello } from "./routes/hello";
-import type ApolloGQLContext from "@util/apolloGQLContext";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

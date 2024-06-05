@@ -1,8 +1,8 @@
 import { getAuth } from "firebase-admin/auth";
 
 import { GraphQLError } from "graphql";
-import type ApolloGQLContext from "@util/apolloGQLContext";
 
+import type ApolloGQLContext from "@util/apolloGQLContext";
 import checkIfAdmin, { validateIfAdmin } from "src/util/checkIfAdmin";
 import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
 

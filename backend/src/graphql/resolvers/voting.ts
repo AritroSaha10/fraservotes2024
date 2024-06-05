@@ -2,7 +2,6 @@ import { getAuth } from "firebase-admin/auth";
 
 import { GraphQLError } from "graphql";
 import { Types } from "mongoose";
-import type ApolloGQLContext from "@util/apolloGQLContext";
 
 import type { CandidateDocument } from "src/models/candidate";
 import type { SelectedOption } from "src/models/decryptedBallot";
@@ -10,6 +9,7 @@ import type { PositionDocument } from "src/models/position";
 import Results from "src/models/results";
 import type { ResultsDocument } from "src/models/results";
 
+import type ApolloGQLContext from "@util/apolloGQLContext";
 import { validateIfAdmin } from "src/util/checkIfAdmin";
 import { isPGPEncrypted } from "src/util/isPGPEncrypted";
 import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";

@@ -22,6 +22,7 @@ import {
     getVotingStatusesCountResolver,
     getVotingStatusesResolver,
 } from "./votingStatus";
+
 import type ApolloGQLContext from "@util/apolloGQLContext";
 
 // Resolvers define how to fetch the types defined in your schema.

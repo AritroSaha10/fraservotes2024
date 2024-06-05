@@ -2,8 +2,8 @@ import { getAuth } from "firebase-admin/auth";
 
 import { GraphQLError } from "graphql";
 import { ObjectId } from "mongodb";
-import type ApolloGQLContext from "@util/apolloGQLContext";
 
+import type ApolloGQLContext from "@util/apolloGQLContext";
 import { validateIfAdmin } from "src/util/checkIfAdmin";
 import validateTokenForSensitiveRoutes from "src/util/validateTokenForSensitiveRoutes";
 
@@ -21,7 +21,11 @@ const getVotingStatusesResolver = async (_: any, __: any, contextValue: ApolloGQ
     return contextValue.dataSources.votingStatuses.getVotingStatuses();
 };
 
-const getVotingStatusResolver = async (_: any, args: { filter: VotingStatusFilter }, contextValue: ApolloGQLContext) => {
+const getVotingStatusResolver = async (
+    _: any,
+    args: { filter: VotingStatusFilter },
+    contextValue: ApolloGQLContext,
+) => {
     // Sensitive action, need to verify whether they are authorized
     const auth = getAuth();
     await validateTokenForSensitiveRoutes(auth, contextValue.authTokenRaw);
