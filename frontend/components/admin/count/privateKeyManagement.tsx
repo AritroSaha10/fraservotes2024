@@ -5,8 +5,8 @@ import { Button, Card, CardBody, Input, Tooltip, Typography } from "@material-ta
 import PrivateKeyDetails from "@/types/admin/count/privateKeyDetails";
 
 interface PrivateKeyManagementProps {
-    privateKeyDetails: PrivateKeyDetails;
-    handlePrivateKeyUpload: (file: File | undefined) => Promise<void>;
+    privateKeyDetails: PrivateKeyDetails | null;
+    handlePrivateKeyUploadEvent: (e: ChangeEvent<HTMLInputElement>) => Promise<void>;
     passphrase: string;
     setPassphrase: Dispatch<SetStateAction<string>>;
     privateKeyValid: boolean;
@@ -16,7 +16,7 @@ interface PrivateKeyManagementProps {
 
 const PrivateKeyManagement = ({
     privateKeyDetails,
-    handlePrivateKeyUpload,
+    handlePrivateKeyUploadEvent,
     passphrase,
     setPassphrase,
     privateKeyValid,
@@ -86,7 +86,7 @@ const PrivateKeyManagement = ({
                             type="file"
                             accept=".asc"
                             className="hidden"
-                            onChange={(e) => handlePrivateKeyUpload(e.target.files?.[0])}
+                            onChange={handlePrivateKeyUploadEvent}
                             disabled={uploadPrivateKeyButtonsDisabled}
                         />
                     </label>

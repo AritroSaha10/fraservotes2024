@@ -1,11 +1,10 @@
-import { ChangeEvent, memo, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 
 import { gql, useApolloClient, useQuery } from "@apollo/client";
-import { ArrowUpTrayIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
-import { Button, Card, CardBody, Input, Tooltip, Typography } from "@material-tailwind/react";
-import { Key, PrivateKey, readPrivateKey, decryptKey, readMessage, encrypt, createMessage, decrypt, readKey } from "openpgp";
+import { Button, Card, CardBody, Typography } from "@material-tailwind/react";
+import { readMessage, decrypt, readKey } from "openpgp";
 import Swal from "sweetalert2";
 
 import isListOfGivenType from "@/util/isListOfGivenType";
@@ -16,7 +15,8 @@ import Config from "@/types/config";
 import SelectedChoice from "@/types/selectedBallotChoice";
 import EncryptedBallot from "@/types/encryptedBallot";
 import DecryptedBallot from "@/types/decryptedBallot";
-import PrivateKeyDetails from "@/types/admin/count/privateKeyDetails";
+import { usePrivateKey } from "@/components/admin/count/usePrivateKey";
+import PrivateKeyManagement from "@/components/admin/count/privateKeyManagement";
 
 const MAIN_DATA_QUERY = gql`
     query MainData {
@@ -60,191 +60,34 @@ function BallotCountPageComponent() {
     const client = useApolloClient();
     const router = useRouter();
 
-    const [publicKey, setPublicKey] = useState<Key | null>();
-    const [encryptedPrivateKey, setEncryptedPrivateKey] = useState<PrivateKey | null>();
-    const [decryptedPrivateKey, setDecryptedPrivateKey] = useState<PrivateKey | null>();
-    const [privateKeyDetails, setPrivateKeyDetails] = useState<PrivateKeyDetails | null>(null);
-    const [privateKeyValid, setPrivateKeyValid] = useState(false);
+    const {
+        publicKey,
+        setPublicKey,
+        decryptedPrivateKey,
+        privateKeyDetails,
+        privateKeyValid,
+        passphrase,
+        setPassphrase,
+        handlePrivateKeyUpload,
+        handleOnPrivKeyVerify,
+    } = usePrivateKey();
 
-    const [passphrase, setPassphrase] = useState<string>("");
     const [ballotCountStatus, setBallotCountStatus] = useState<BallotCountStatus>(BallotCountStatus.IDLE);
     const [busy, setBusy] = useState(false);
 
-    const renderPrivateKeyDetails = () => {
-        if (!privateKeyDetails) {
-            return (
-                <Typography
-                    variant="h5"
-                    color="red"
-                    className="mb-4"
-                >
-                    No private key is currently uploaded.
-                </Typography>
-            );
-        }
-
-        return (
-            <div className="mb-4">
-                <Typography
-                    variant="h5"
-                    color="green"
-                    className="mb-4"
-                >
-                    Private Key is uploaded.
-                </Typography>
-                <Typography
-                    variant="h6"
-                    color="blue-gray"
-                >
-                    Key ID: {privateKeyDetails.keyID}
-                </Typography>
-                <Typography
-                    variant="h6"
-                    color="blue-gray"
-                >
-                    Creation Date: {privateKeyDetails.creationDate}
-                </Typography>
-                {privateKeyDetails.userIDs.map((userID, index) => (
-                    <Typography
-                        key={index}
-                        variant="h6"
-                        color="blue-gray"
-                    >
-                        User ID: {userID}
-                    </Typography>
-                ))}
-            </div>
-        );
-    };
-
-    const handlePrivateKeyUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const handlePrivateKeyUploadEvent = async (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
-
-        setPrivateKeyValid(false);
         const file = e.target.files?.[0];
 
-        if (!file) {
-            setEncryptedPrivateKey(null);
-            setPrivateKeyDetails(null);
-            return;
-        }
-
         setBusy(true);
-
-        const reader = new FileReader();
-        reader.onload = async (loadEvent) => {
-            const privateKeyRaw = loadEvent.target?.result as string;
-            try {
-                const privateKey = await readPrivateKey({ armoredKey: privateKeyRaw });
-                setEncryptedPrivateKey(privateKey);
-                setPrivateKeyDetails({
-                    keyID: privateKey.getKeyID().toHex(),
-                    creationDate: privateKey.getCreationTime().toLocaleString("en-US", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                    }),
-                    userIDs: privateKey.getUserIDs(),
-                    fileName: file.name,
-                });
-            } catch (e) {
-                Swal.fire({
-                    title: "Error",
-                    text: "Failed to update private key. Please ensure it is a valid OpenPGP private key.",
-                    icon: "error",
-                });
-                setEncryptedPrivateKey(null);
-                setPrivateKeyDetails(null);
-            } finally {
-                setBusy(false);
-            }
-        };
-        reader.readAsText(file);
-    };
-
-    const handleOnPrivKeyVerify = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        e.preventDefault();
-
-        if (encryptedPrivateKey === null || encryptedPrivateKey === undefined) {
-            Swal.fire({
-                title: "Error",
-                text: "A private key was not uploaded, please do so before verifying.",
-                icon: "error",
-            });
-            return;
-        }
-
-        setBusy(true);
-
-        // First, try decrypting the key
-        let decryptedPrivateKeyTmp: PrivateKey | null = null;
         try {
-            decryptedPrivateKeyTmp = await decryptKey({
-                privateKey: encryptedPrivateKey,
-                passphrase,
-            });
-
-            setDecryptedPrivateKey(decryptedPrivateKeyTmp);
+            await handlePrivateKeyUpload(file);
         } catch (e) {
-            Swal.fire({
-                title: "Error",
-                text: "Something went wrong while decrypting your private key. This usually means the passphrase does not match the private key. Please change it and try again.",
-                icon: "error",
-            });
-            console.error(e);
-
-            setBusy(false);
-            return;
-        }
-
-        try {
-            // Try encrypting string with public key to confirm if public & private key match
-            const testMessage = "i love the university of waterloo";
-            const testEncryptedMessage = await readMessage({
-                armoredMessage: await encrypt({
-                    message: await createMessage({ text: testMessage }),
-                    encryptionKeys: publicKey!,
-                }),
-            });
-
-            // Try decrypting back
-            const { data: testDecryptedMessage } = await decrypt({
-                message: testEncryptedMessage,
-                decryptionKeys: decryptedPrivateKeyTmp,
-            });
-
-            const privateKeyValidTmp = testDecryptedMessage === testMessage;
-            if (!privateKeyValidTmp) {
-                Swal.fire({
-                    title: "Error",
-                    text: "The private key is not compatible with the public key. Please upload a new private key and try again.",
-                });
-            }
-
-            setPrivateKeyValid(privateKeyValidTmp);
-        } catch (e) {
-            const decryptionFailed = String(e).includes("Session key decryption failed");
-            if (decryptionFailed) {
-                Swal.fire({
-                    title: "Error",
-                    text: "The private key could not decrypt the string. Try checking your passphrase and try again.",
-                    icon: "error",
-                });
-            } else {
-                Swal.fire({
-                    title: "Error",
-                    text: "Something went wrong when verifying if the private key is valid. Please try again.",
-                    icon: "error",
-                });
-                console.error("Something went wrong when verifying public and private key:", e);
-            }
+            console.error("Something went wrong when handling the private key upload event:", e);
         } finally {
             setBusy(false);
         }
-    };
+    }
 
     const startBallotCount = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
@@ -418,7 +261,7 @@ function BallotCountPageComponent() {
                 icon: "error",
             });
         }
-    }, [data]);
+    }, [data, setPublicKey]);
 
     if (error) {
         Swal.fire({
@@ -446,33 +289,6 @@ function BallotCountPageComponent() {
     const uploadPrivateKeyButtonsDisabled =
         busy || config.isOpen || data!.encryptedBallotCount === 0 || publicKey === null;
 
-    const FileUploadAreaText = memo(function FileUploadAreaText({ uploadPrivateKeyButtonsDisabled, privateKeyDetails }: { uploadPrivateKeyButtonsDisabled: boolean, privateKeyDetails: PrivateKeyDetails }) {
-        if (uploadPrivateKeyButtonsDisabled) {
-            return (
-                <>
-                    <p className="mb-2 text-sm text-gray-500">
-                        Upload not allowed, as voting is open or there are no encrypted ballots.
-                    </p>
-                </>
-            );
-        } else if (privateKeyDetails !== null) {
-            return (
-                <>
-                    <p className="mb-2 text-sm text-gray-500">Uploaded {privateKeyDetails.fileName}</p>
-                </>
-            );
-        } else {
-            return (
-                <>
-                    <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">Click to upload</span> <span className="text-red-500">*</span>
-                    </p>
-                    <p className="text-xs text-gray-500">.ASC</p>
-                </>
-            );
-        }
-    },);
-
     const countingStatusDisplay = (() => {
         switch (ballotCountStatus) {
             case BallotCountStatus.IDLE:
@@ -496,92 +312,15 @@ function BallotCountPageComponent() {
         <>
             <Typography variant="h1">Ballot Count</Typography>
 
-            <Card className="w-full lg:w-2/3 shadow-lg">
-                <CardBody className="p-6">
-                    <Typography
-                        variant="h4"
-                        color="blue-gray"
-                        className="mb-4"
-                    >
-                        Private Key Management
-                    </Typography>
-
-                    {renderPrivateKeyDetails()}
-
-                    <Typography
-                        variant="h5"
-                        color="blue-gray"
-                        className="mb-4"
-                    >
-                        Upload New Private Key
-                    </Typography>
-
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center justify-center w-full">
-                            <label
-                                htmlFor="dropzone-file"
-                                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg ${!uploadPrivateKeyButtonsDisabled ? "bg-gray-50 hover:bg-gray-100 cursor-pointer" : "bg-gray-200"}`}
-                            >
-                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <ArrowUpTrayIcon className="w-8 h-8 mb-4 text-gray-500" />
-                                    <FileUploadAreaText />
-                                </div>
-                                <input
-                                    id="dropzone-file"
-                                    type="file"
-                                    accept=".asc"
-                                    className="hidden"
-                                    onChange={handlePrivateKeyUpload}
-                                    disabled={uploadPrivateKeyButtonsDisabled}
-                                />
-                            </label>
-                        </div>
-
-                        <Input
-                            type="password"
-                            label="Passphrase"
-                            required
-                            value={passphrase}
-                            onChange={(e) => {
-                                setPrivateKeyValid(false);
-                                setPassphrase(e.target.value);
-                            }}
-                        />
-
-                        <div className="flex gap-4 items-center">
-                            <Tooltip
-                                content="You can't upload a private key while voting is open or there are no encrypted ballots."
-                                placement="bottom-start"
-                                className={
-                                    !(config.isOpen || data!.encryptedBallotCount === 0 || publicKey === null)
-                                        ? "hidden"
-                                        : ""
-                                }
-                            >
-                                <div>
-                                    <Button
-                                        variant="outlined"
-                                        color="green"
-                                        disabled={uploadPrivateKeyButtonsDisabled || privateKeyValid}
-                                        onClick={handleOnPrivKeyVerify}
-                                    >
-                                        Verify
-                                    </Button>
-                                </div>
-                            </Tooltip>
-
-                            {privateKeyValid ? (
-                                <div className="flex gap-1 items-center">
-                                    <CheckCircleIcon className="text-green-500 w-8 h-8" />
-                                    <span className="text-sm">Private key has been verified.</span>
-                                </div>
-                            ) : (
-                                <></>
-                            )}
-                        </div>
-                    </div>
-                </CardBody>
-            </Card>
+            <PrivateKeyManagement 
+                privateKeyDetails={privateKeyDetails} 
+                handlePrivateKeyUploadEvent={handlePrivateKeyUploadEvent} 
+                passphrase={passphrase}
+                setPassphrase={setPassphrase}
+                privateKeyValid={privateKeyValid}
+                handleOnPrivKeyVerify={handleOnPrivKeyVerify}
+                uploadPrivateKeyButtonsDisabled={uploadPrivateKeyButtonsDisabled}
+            />
 
             <Card className="w-full lg:w-2/3 shadow-lg">
                 <CardBody className="p-6">

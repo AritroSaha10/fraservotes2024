@@ -13,6 +13,8 @@ export const usePrivateKey = () => {
     const [passphrase, setPassphrase] = useState<string>("");
 
     const handlePrivateKeyUpload = async (file: File | undefined) => {
+        setPrivateKeyValid(false);
+
         if (!file) {
             setEncryptedPrivateKey(null);
             setPrivateKeyDetails(null);
@@ -106,6 +108,7 @@ export const usePrivateKey = () => {
         decryptedPrivateKey,
         privateKeyDetails,
         privateKeyValid,
+        setPrivateKeyValid,
         passphrase,
         setPassphrase,
         handlePrivateKeyUpload,
