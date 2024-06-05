@@ -1,4 +1,3 @@
-// usePrivateKey.js
 import { useState } from "react";
 import { PrivateKey, readPrivateKey, decryptKey, readMessage, encrypt, createMessage, decrypt, readKey, Key } from "openpgp";
 import Swal from "sweetalert2";
