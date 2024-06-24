@@ -72,7 +72,7 @@ export default function AdminPage() {
 
     const table = useMaterialReactTable({
         columns,
-        data: votingStatusesLoading ? [] : (votingStatusesData.votingStatuses as VotingStatus[]),
+        data: (votingStatusesLoading || votingStatusesError) ? [] : (votingStatusesData.votingStatuses as VotingStatus[]),
     });
 
     if (mainDataError || votingStatusesError) {
