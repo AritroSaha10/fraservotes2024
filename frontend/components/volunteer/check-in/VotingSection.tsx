@@ -14,8 +14,6 @@ const candidatesQueryOp = gql`
     query Query {
         candidates {
             _id
-            biography
-            campaignVideo
             fullName
             grade
             picture
