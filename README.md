@@ -1,11 +1,11 @@
 # FraserVotes 2024
-The online voting platform used for John Fraser S.S.'s SAC elections for the 2024-2025 school year. This website is intended to be used on a "kiosk" device in a voting station, substituting a regular ballot.
+A secure online voting platform for student council elections. This was used for John Fraser SS's SAC elections in 2024. The web app is intended to be used on a "kiosk" device in a voting station, substituting a regular ballot.
 
 # Key Points
 - PGP encryption for all ballots
 - Local decryption of ballots, keeping your private key secure as it stays on your computer
 - Fully mobile responsive
-- Stack: React/Next.js, Bun, MongoDB, GraphQL/Apollo Server, Firebase Authentication
+- Stack: React/Next.js, Typescript, Bun, MongoDB, GraphQL/Apollo Server, Firebase Authentication
 
 # Photos
 
