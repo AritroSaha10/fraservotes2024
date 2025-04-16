@@ -36,4 +36,4 @@ Check-in page, which allows volunteers to open a ballot for a student voter usin
 *Settings page, where admins can start/stop voting, change the public key, and reset all data on the platform. Note that the last two actions can only be completed if voting is closed.*
 
 # Copyright
-This project is under the GNU General Public License, version 3. More info is available in [LICENSE](LICENSE)
+This project is under the MIT License. More info is available in [LICENSE](LICENSE)
